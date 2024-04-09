@@ -63,7 +63,7 @@ public:
 private:
 	VecD _X;
 	std::vector<Polinomial> _Polinoms;
-	Matrixx mat;
+	Matrix mat;
 	VecD _Diagonal;
 };
 
