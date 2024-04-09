@@ -12,7 +12,6 @@
 #include <string>
 #include <math.h>
 #include "GnuPlot.h"
-#include "SplineInterpolation.h"
 #include "Splayn.h"
 
 
@@ -270,39 +269,39 @@ double My_function(double x) // от 0 до п/2
 	return (pow(x, 4) * exp(x)) / (pow(exp(x) - 1, 2));
 }
 
-SplineInterpolation Calculation_Interpolation(string fiename, double x, double y)
-{
-	vector<Point> new_points;
-	ifstream in(fiename); // окрываем файл для чтения
-
-	if (in.is_open())
-	{
-		double x, y;
-		while (in >> x >> y)
-		{
-			new_points.push_back(Point{ x, y });
-		}
-	}
-	in.close();
-
-	for (int i = 0; i < new_points.size(); i++)
-	{
-		new_points[i].x *= x;
-		new_points[i].y *= y;
-	}
-
-	vector<double> v;
-	for (int i = 0; i < new_points.size(); i++)
-	{
-		v.push_back(new_points[i].y);
-	}
-
-	SplineInterpolation spl(v);
-
-	//spl.InterpolateCubic(1000, 300, 50250);
-	spl.InterpolateSquare(new_points.size(), new_points[0].x, new_points[new_points.size() - 1].x);
-	return spl;
-}
+//SplineInterpolation Calculation_Interpolation(string fiename, double x, double y)
+//{
+//	vector<Point> new_points;
+//	ifstream in(fiename); // окрываем файл для чтения
+//
+//	if (in.is_open())
+//	{
+//		double x, y;
+//		while (in >> x >> y)
+//		{
+//			new_points.push_back(Point{ x, y });
+//		}
+//	}
+//	in.close();
+//
+//	for (int i = 0; i < new_points.size(); i++)
+//	{
+//		new_points[i].x *= x;
+//		new_points[i].y *= y;
+//	}
+//
+//	vector<double> v;
+//	for (int i = 0; i < new_points.size(); i++)
+//	{
+//		v.push_back(new_points[i].y);
+//	}
+//
+//	SplineInterpolation spl(v);
+//
+//	//spl.InterpolateCubic(1000, 300, 50250);
+//	spl.InterpolateSquare(new_points.size(), new_points[0].x, new_points[new_points.size() - 1].x);
+//	return spl;
+//}
 
 Splayn Calculation_Interpolation(string fiename)
 {
@@ -1919,8 +1918,8 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 	pac.SetParametrs2D(1, 1, 3, "PTi", "z,mkm", "P (bar)");
 	pac.SetParametrs2D(2, 1, 3, "PTe", "z,mkm", "P (bar)");
 	ofstream fout_Pac(Pacteti[0]);
-	ofstream fout_PTe(Pacteti[1]);
-	ofstream fout_PTi(Pacteti[2]);
+	ofstream fout_PTi(Pacteti[1]);
+	ofstream fout_PTe(Pacteti[2]);
 
 	/*ofstream fout_depth23(depth23);
 	ofstream fout_depth234(depth234);
@@ -2218,7 +2217,7 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 				fout_PTe << 1e+4* dz_acoustic* k / kabs << "   " << p0v * ((Melt_metal[mt].ge* param.T00* (spl_C_e_on_T.GetY(param.T00* spl_Te.GetY(k* dz_acoustic)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * 1e-6))*
 					(spl_Te.GetY(k* dz_acoustic) - 1.)) << endl;
 			}
-			system("pause");
+			//system("pause");
 
 			namefile.clear();
 			namefile = "Pacoustic (z,mkm) " + metall + "," + type_beam + ", pulse duration = " + ConvertNumToStringdouble(tp * 1e+15) + "fs, moment time = " + ConvertNumToStringdouble(tt) + "fs";
@@ -2237,8 +2236,8 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 			fout_PTi.close();
 			//system("pause");
 			fout_Pac.open(Pacteti[0]);
-			fout_PTe.open(Pacteti[1]);
-			fout_PTi.open(Pacteti[2]);
+			fout_PTi.open(Pacteti[1]);
+			fout_PTe.open(Pacteti[2]);
 			//system("pause");
 			//pac.Close_and_open_files_for_replot(for_close_and_open_ac);
 
@@ -2777,8 +2776,8 @@ int main()
 	/*  Параметры лазера */
 
 	//double P0 = 0.25e+11;//1e+8; 1e+9; // input intensity, W/cm2
-	double P0 = 0.375e+10; // 1e+8;//1e+8; 1e+9; // input intensity, W/cm2
-	double tpp = 1e-11;// 1e-13; // pulse duration, s
+	double P0 = 1.5e+10;//0.375e+10; // 1e+8;//1e+8; 1e+9; // input intensity, W/cm2
+	double tpp = 1e-12;// 1e-13; // pulse duration, s
 	//double tpp = 1e-12;// 1e-13; // pulse duration, s
 
 	/*string str = ConvertNumToStringdouble(P0 * tpp * 100 * 100);
