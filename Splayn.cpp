@@ -145,7 +145,7 @@ void Splayn::SetInitialData(VecD X, size_t power)
 	size_t size = (power + 1) * (X.size() - 1);
 	VecD Diagonal(size, 1.0);
 	this->_Diagonal = Diagonal;
-	double dx = this->_X[1] - this->_X[0];// равномерная сетка (если будет неравномерная сетка, то нужно одпраить в методе способ заполнения диагонали)
+	double dx = this->_X[1] - this->_X[0];// СЂР°РІРЅРѕРјРµСЂРЅР°СЏ СЃРµС‚РєР° (РµСЃР»Рё Р±СѓРґРµС‚ РЅРµСЂР°РІРЅРѕРјРµСЂРЅР°СЏ СЃРµС‚РєР°, С‚Рѕ РЅСѓР¶РЅРѕ РѕРґРїСЂР°РёС‚СЊ РІ РјРµС‚РѕРґРµ СЃРїРѕСЃРѕР± Р·Р°РїРѕР»РЅРµРЅРёСЏ РґРёР°РіРѕРЅР°Р»Рё)
 	for (size_t i = 1; i < this->_Diagonal.size(); i += 2) {
 		this->_Diagonal[i] = dx;
 	}
@@ -198,7 +198,7 @@ void Splayn::Interpolate(VecD X, VecD Y, size_t power)
 	this->_Polinoms.clear();
 	size_t NumberOfPoints = X.size();
 	size_t size = (power + 1) * (NumberOfPoints - 1);
-	Matrixx mat(size, size);
+	Matrix mat(size, size);
 	VecD Free(size, 0.0);
 	int num = 0;
 	for (size_t i = 0; i < (NumberOfPoints - 1); i++)
@@ -324,7 +324,7 @@ void Splayn::OutPut()
 void Splayn::Calculation_Interpolation(string fiename)
 {
 	vector<Point> new_points;
-	ifstream in(fiename); // окрываем файл для чтения
+	ifstream in(fiename); // РѕРєСЂС‹РІР°РµРј С„Р°Р№Р» РґР»СЏ С‡С‚РµРЅРёСЏ
 
 	VecD X;
 	VecD Y;
@@ -380,7 +380,7 @@ void Splayn::Calculation_InterpolationFast(double*** Tei, int Nz_heat, double dz
 void Splayn::Calculation_InterpolationFast(string fiename)
 {
 	vector<Point> new_points;
-	ifstream in(fiename); // окрываем файл для чтения
+	ifstream in(fiename); // РѕРєСЂС‹РІР°РµРј С„Р°Р№Р» РґР»СЏ С‡С‚РµРЅРёСЏ
 
 	VecD X;
 	VecD Y;
