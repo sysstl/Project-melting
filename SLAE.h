@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include "Matrix.h"
 
 typedef std::vector<double> VecD;
 typedef std::vector<std::vector<double>> VecVecD;
@@ -14,12 +15,12 @@ public:
 
 	SLAE(size_t Rows, size_t Cols);
 	SLAE(VecVecD& Values, VecD& FreeCol);
-	SLAE(Matrixx& Matrix, VecD& FreeCol);
+	SLAE(Matrix& Matrix, VecD& FreeCol);
 	SLAE(VecD& Matrix, VecD& FreeCol);
 	VecD GetSolution();
 	VecD SolveProgon();
 	VecD SolveProgonLinearInterpolate();
-	Matrixx GetMatrix();
+	Matrix GetMatrix();
 	VecD GetFreeCol();
 
 private:
@@ -27,7 +28,7 @@ private:
 	void SwitchRows(size_t Which, size_t Where);
 	void MakeItTriangle();
 
-	Matrixx _Matrix;
+	Matrix _Matrix;
 	VecD _Diagonal;
 	VecD _FreeCol;
 };
