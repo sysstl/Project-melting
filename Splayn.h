@@ -51,7 +51,7 @@ class Splayn
 public:
 	Splayn();
 	void SetInitialData(VecD X, size_t power);
-	void InterpolateFast(VecD Y, size_t power);
+	void InterpolateFast(size_t power, double*** Tei, int fix_x, int fix_y);
 	void Interpolate(VecD X, VecD Y, size_t power);
 	double GetY(double X);
 	void OutPut();
@@ -66,4 +66,3 @@ private:
 	Matrix mat;
 	VecD _Diagonal;
 };
-
