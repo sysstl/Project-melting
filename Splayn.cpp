@@ -154,43 +154,9 @@ void Splayn::SetInitialData(VecD X, size_t power)
 void Splayn::InterpolateFast(size_t power, double*** Tei, int fix_x, int fix_y)
 {
 	this->_Polinoms.clear();
-	/*size_t size = (power + 1) * (this->_X.size() - 1);
-	VecD Free(size, 0.0);
-
-	for (size_t i = 0; i < (this->_X.size() - 1); i++)
+	for (size_t i = 0; i < this->_X.size() - 1; i++)
 	{
-		for (size_t j = 0; j < 2; j++)
-		{
-			Free[(2 * i) + j] = Y[i + j];
-		}
-	}
-
-	SLAE slae(this->_Diagonal, Free);
-	VecD coeffs = slae.SolveProgonLinearInterpolate();*/
-
-	/*cout << endl;
-	for (size_t i = 0; i < size; i++)
-	{
-		cout<<"   " << this->_Diagonal[i] <<"    "<< Free[i] << endl;
-	}
-	cout << endl;
-
-	for (size_t i = 0; i < size; i++)
-	{
-		cout << coeffs[i] << "   ";
-	}
-	cout << endl;*/
-
-	Polinomial temp;
-	for (size_t i = 0; i < this->_X.size() - 1; i++)//  this->_X.size() = 7 (i=0,   , 5 включ)
-	{
-		//temp = Polinomial(VecD{ coeffs[(power + 1) * i] }); // 0, 2, 4 6, 8, 10, ....
-		temp = Polinomial(VecD{ Tei[fix_x][fix_y][i] }); // 0, 2, 4 6, 8, 10, ....
-		for (size_t j = 1; j < (power + 1); j++) {
-			//temp += pow(Polinomial(VecD{ -this->_X[i], 1 }), j) * coeffs[(power + 1) * i + j]; // 1, 3, 5, 7, 9,....
-			temp += pow(Polinomial(VecD{ -this->_X[i], 1 }), j) * ((Tei[fix_x][fix_y][i + 1] - Tei[fix_x][fix_y][i]) / (this->_X[1] - this->_X[0]));
-		}
-		this->_Polinoms.push_back(temp);
+		this->_Polinoms.push_back(Polinomial(VecD{ Tei[fix_x][fix_y][i] + (-this->_X[i]) * ((Tei[fix_x][fix_y][i + 1] - Tei[fix_x][fix_y][i]) / (this->_X[1] - this->_X[0])), ((Tei[fix_x][fix_y][i + 1] - Tei[fix_x][fix_y][i]) / (this->_X[1] - this->_X[0])) }));
 	}
 }
 
