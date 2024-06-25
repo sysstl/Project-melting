@@ -1,4 +1,9 @@
 #include "Splayn.h"
+#include <iostream>
+
+using namespace std;
+
+int count_splayn = 0;
 
 Polinomial pow(Polinomial pol, size_t power)
 {
@@ -226,27 +231,37 @@ void Splayn::Interpolate(VecD X, VecD Y, size_t power)
 
 	//////
 
+	/*for (size_t i = 0; i < size; i++)
+	{
+		for (size_t j = 0; j < size; j++)
+		{
+			cout << mat[i][j] << "   ";
+		}
+		cout << Free[i] << endl;
+	}
+	cout << endl;*/
+
 	SLAE slae(mat, Free);
-	//VecD coeffs = slae.GetSolution();
-	VecD coeffs = slae.SolveProgon();
+	VecD coeffs = slae.GetSolution();
+	//VecD coeffs = slae.SolveProgon();
 
 	/////////
-	/*//cout << endl;
-	//for (size_t i = 0; i < size; i++)
-	//{
-	//	for (size_t j = 0; j < size; j++)
-	//	{
-	//		cout << mat[i][j] << "   ";
-	//	}
-	//	cout << Free[i] << endl;
-	//}
 	//cout << endl;
+	/*for (size_t i = 0; i < size; i++)
+	{
+		for (size_t j = 0; j < size; j++)
+		{
+			cout << mat[i][j] << "   ";
+		}
+		cout << Free[i] << endl;
+	}
+	cout << endl;*/
 
 	//for (size_t i = 0; i < size; i++)
 	//{
 	//	cout<< coeffs[i] << "   ";
 	//}
-	//cout << endl;*/
+	//cout << endl;
 
 	//////////////////
 
@@ -305,16 +320,17 @@ void Splayn::Calculation_Interpolation(string fiename)
 			/*	new_points.push_back(Point{ x, y });*/
 			X.push_back(x);
 			Y.push_back(y);
+			//cout << x << "   " << y << endl;
 		}
 	}
 	in.close();
-
+//	cout << " size = " << X.size() << endl;
 	//for (int i = 0; i < new_points.size(); i++)
 	//{
 	//	X.push_back(new_points[i].x);
 	//	Y.push_back(new_points[i].y);
 	//}
-
+	//system("pause");
 	this->Interpolate(X, Y, 1);
 }
 
