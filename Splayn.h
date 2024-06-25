@@ -28,6 +28,7 @@ public:
 	Polinomial();
 	Polinomial(VecD Coefficients);
 	double GetY(double X);
+	double GetYFast(double X);
 	size_t GetMaxPower();
 
 	Polinomial operator*(Polinomial& other);
@@ -54,7 +55,9 @@ public:
 	void InterpolateFast(size_t power, double*** Tei, int fix_x, int fix_y);
 	void Interpolate(VecD X, VecD Y, size_t power);
 	double GetY(double X);
+	//double GetYFast(double X);
 	void OutPut();
+	/*void OutPutFast(double X);*/
 	void Calculation_Interpolation(string fiename);
 	void Calculation_Interpolation(double*** Tei, int Nz_heat, double dz_heat, int fix_x, int fix_y);
 	void Calculation_InterpolationFast(double*** Tei, int Nz_heat, double dz_heat, int fix_x, int fix_y);
