@@ -196,7 +196,7 @@ Matrix Matrix::operator*(const Matrix& other)
 	return Result;
 }
 
-Matrix Matrix::operator=(double& value) // прописать остальные подобные операторы
+Matrix Matrix::operator=(double& value) // РїСЂРѕРїРёСЃР°С‚СЊ РѕСЃС‚Р°Р»СЊРЅС‹Рµ РїРѕРґРѕР±РЅС‹Рµ РѕРїРµСЂР°С‚РѕСЂС‹
 {
 	Matrix Result(this->_Rows, this->_Cols);
 	for (size_t i = 0; i < this->_Rows; ++i) {
