@@ -21,10 +21,43 @@
 using namespace std;
 
 double pi = 3.141592654;
-//int countt = 0;
 
 enum Metal { Au, Al, Cu, Ni };
 enum TypeBeam { Gauss, Vortex };
+
+template <typename T>
+T convertString(const string& s) {
+	return T{ s };
+}
+
+template<> 
+double convertString<double>(const string& s) {
+	return stod(s);
+}
+
+template <typename T> 
+map<string, T> parseFile(string filename) {
+	fstream file(filename);
+	string tmp_line;
+	map<string, T> result;
+
+	while (file >> tmp_line) {
+		if (tmp_line.front() == ';')
+			continue;
+
+		std::string::size_type equal_sign_at = tmp_line.find("=");
+		if (equal_sign_at == std::string::npos)
+			throw runtime_error("No '=' sign in a string");
+
+		string key = tmp_line.substr(0, equal_sign_at);
+		string value = tmp_line.substr(equal_sign_at + 1, tmp_line.length());
+		result[key] = convertString<T>(value);
+	}
+
+	file.close();
+
+	return result;
+}
 
 struct Parametrs {
 	double t0;
@@ -110,7 +143,7 @@ void MySort_Point3D_y(vector<Point3D>& v)
 	int count = 0;
 	for (it = copy_v.begin(); it != copy_v.end(); it++)// цикл по точкам с которым сравниваем
 	{
-		if (((*it).index_z == (*(it+1)).index_z) && (it != copy_v.end()))
+		if (((*it).index_z == (*(it + 1)).index_z) && (it != copy_v.end()))
 		{
 			count++;
 		}
@@ -118,11 +151,11 @@ void MySort_Point3D_y(vector<Point3D>& v)
 		{
 			end_pos = it;
 			Point3D tmp(0, 0, 0);
-			for (temp = begin_pos; temp<=end_pos; temp++)
+			for (temp = begin_pos; temp <= end_pos; temp++)
 			{
 				v_for_partial_sort.push_back(tmp);
 			}
-			copy(begin_pos, end_pos+1, v_for_partial_sort.begin());
+			copy(begin_pos, end_pos + 1, v_for_partial_sort.begin());
 			sort(v_for_partial_sort.begin(), v_for_partial_sort.end(), comp_y);
 			copy(v_for_partial_sort.begin(), v_for_partial_sort.end(), v.end());
 
@@ -131,7 +164,7 @@ void MySort_Point3D_y(vector<Point3D>& v)
 				v.push_back((*temp));
 			}
 
-			begin_pos = (it+1);
+			begin_pos = (it + 1);
 			count = 0;
 			v_for_partial_sort.clear();
 			v_for_partial_sort.erase(v_for_partial_sort.begin(), v_for_partial_sort.end());
@@ -139,7 +172,7 @@ void MySort_Point3D_y(vector<Point3D>& v)
 	}
 }
 
-void MySort_Point3D_z(vector<Point3D>& v)
+void MySort_Point3D_z(vector<Point3D> & v)
 {
 	vector<Point3D> copy_v, v_for_partial_sort;
 	vector<Point3D>::iterator it;
@@ -180,7 +213,7 @@ void MySort_Point3D_z(vector<Point3D>& v)
 	}
 }
 
-void MySort_Point3D_x(vector<Point3D>& v)
+void MySort_Point3D_x(vector<Point3D> & v)
 {
 	vector<Point3D> copy_v, v_for_partial_sort;
 	vector<Point3D>::iterator it;
@@ -221,7 +254,7 @@ void MySort_Point3D_x(vector<Point3D>& v)
 	}
 }
 
-void My_unique(vector<Point3D>& v)
+void My_unique(vector<Point3D> & v)
 {
 	vector<Point3D>::iterator it1_comp = v.begin();
 	vector<Point3D>::iterator it2;
@@ -606,7 +639,7 @@ void GRU1(double*** e2, int& Nx, int& Ny)
 void GRU2(double*** b2x, double*** b2y, double*** b2z, int& Nx, int& Ny, int& Nz)
 {// Boundary condition of
  // GRU 2
-	// velocity
+
 	for (int k = 0; k < Nx; k++)
 	{
 		for (int kk = 0; kk < Ny; kk++)
@@ -687,25 +720,28 @@ void VortexBeam(double*** F, int& Nx, int& Ny, int& Nz, double& dx, double& dy, 
 	}
 }
 
-void Calculation00(Metal mt, Parametrs param, Splayn spl_C_e_on_T, Splayn spl_G_e_on_T, /*double*** F,*/ TypeBeam tbeam, double*** tmpe0, double*** tmpe1, double*** tmpi0, double*** tmpi1,/* double** fict_masive,*/ int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double& dt, double& A2,/*double*** A1, double*** A1i, double& A2, double*** B1, double*** CC1, double*** CC2,*/ int& n, double& beta)
+void Calculation00(Metal mt, Parametrs param, Splayn spl_C_e_on_T, Splayn spl_G_e_on_T, /*double*** F,*/ TypeBeam tbeam, double*** tmpe0, double*** tmpe1, double*** tmpi0, double*** tmpi1, int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double& dt, /*double& A1,*/ double& A2, /*double& B1, double& CC1, double& CC2, */int& n, double& beta)
 {// Calculation of heat conduction by explicit schem
 
-	if (tbeam == Gauss)
-	{
-		//	GaussBeam(F, Nx, Ny, Nz, dx, dy, dz, dt, n, beta);
-	}
+	//if (tbeam == Gauss)
+	//{
+	//	//GaussBeam(F, Nx, Ny, Nz, dx, dy, dz, dt, n, beta);
+	//}
 
-	if (tbeam == Vortex)
-	{
-		//VortexBeam(F, Nx, Ny, Nz, dx, dy, dz, dt, n, beta, 1);
-	}
+	//if (tbeam == Vortex)
+	//{
+	//	//VortexBeam(F, Nx, Ny, Nz, dx, dy, dz, dt, n, beta, 1);
+	//}
 
 	double A111 = 0, B111 = 0, A1i111 = 0, CC1111 = 0, CC2111 = 0, FFF = 0;
 
+	//for (int i = 2; i < Nx - 1; i++)
 	for (int i = 1; i < Nx - 1; i++)
 	{
+		//for (int j = 2; j < Ny - 1; j++)
 		for (int j = 1; j < Ny - 1; j++)
 		{
+			//for (int k = 2; k < Nz - 1; k++)
 			for (int k = 1; k < Nz - 1; k++)
 			{
 				A111 = (Dependence_k_e_on_T(mt, param.T00 * tmpe0[i][j][k]) / (100.)) * param.t0 / ((spl_C_e_on_T.GetY(param.T00 * tmpe0[i][j][k]) / (100. * 100. * 100.)) * param.r0 * param.r0);
@@ -721,6 +757,7 @@ void Calculation00(Metal mt, Parametrs param, Splayn spl_C_e_on_T, Splayn spl_G_
 													//tmpi1[i][j][k] = tmpi1[i][j][k];// +dt * CC2 * tmpe0[i][j][k];
 				tmpi1[i][j][k] = tmpi0[i][j][k] +
 					dt * A1i111 * ((tmpi0[i + 1][j][k] + tmpi0[i - 1][j][k] - 2 * tmpi0[i][j][k]) / (dx * dx) + (tmpi0[i][j + 1][k] + tmpi0[i][j - 1][k] - 2 * tmpi0[i][j][k]) / (dy * dy) + A2 * (tmpi0[i][j][k - 1] + tmpi0[i][j][k + 1] - 2 * tmpi0[i][j][k]) / (dz * dz));
+
 			}
 		}
 	}
@@ -733,15 +770,6 @@ void Calculation00(Metal mt, Parametrs param, Splayn spl_C_e_on_T, Splayn spl_G_
 			tmpi1[i][j][Nz - 1] = 1.0;// 1e-16;
 			tmpe1[i][j][0] = tmpe1[i][j][1];
 			tmpi1[i][j][0] = tmpi1[i][j][1];
-			// эта строчка заменяются на следующие
-			//double a4, a5, T_air = 300, eps = 0.1, sigma = 5.67e-12; // Вт/см2 К4 //???????????????
-			//double h_c = 0.0015; // Вт/cm2 K
-			//a4 = h_c / (param.kabs * (Dependence_k_e_on_T(mt, 300.) / (100. * 100.))); // делим а 0.1 т.к теплпроводость ионной решетки пока не учитыв в задаче 
-			//a5 = eps * sigma * pow(param.T00, 3) / (param.kabs * (Dependence_k_e_on_T(mt, 300.) / (100. * 100.))); // делим а 0.1 т.к теплпроводость ионной решетки пока не учитыв в задаче 
-			//double f1 = a4 * (tmpi0[i][j][0] - 1.) + a5 * (pow(tmpi0[i][j][0], 4) - 1.);// ГУ-2-го рода ?????? скорее всего f1 это  Q(i,j,1,1)
-			//fict_masive[i][j] = tmpi1[i][j][1] - 2 * dz * f1; // С использованием центральной разностной аппроксимации градиента на поверхности z=0 находим значение температуры во внешнем узле Q(i,j,0,2).
-			//tmpi1[i][j][0] = (fict_masive[i][j] + tmpi1[i][j][1]) / 2; // Значение температуры на поверхности раздела сред (узел k=1) находим как среднее между внешним узлом Q(i,j,0,2) и внутренним узлом Q(i,j,2,2
-
 		}
 	}
 
@@ -768,37 +796,17 @@ void Calculation00(Metal mt, Parametrs param, Splayn spl_C_e_on_T, Splayn spl_G_
 	}
 }
 
-//void fun1(int& Nx, int& Ny, int& Nz, Parametrs & param, Metal mt, double*** tmpe1, double*** tmpi1, Splayn & spl_C_e_on_T, Splayn & spl_G_e_on_T, double*** A1, double*** A1i, double*** B1, double*** CC1, double*** CC2, double& beta, int& begin, int& end)
-//{
-//	for (int k = begin; k < end; k++)
-//		//for (int k = 0; k < Nz; k++)
-//	{
-//		for (int j = 0; j < Ny; j++)
-//		{
-//			for (int i = 0; i < Nx; i++)
-//			{
-//				// рассчитываем в размерном виде																						  //дставлем и считаем коэффициенты
-//				A1i[i][j][k] = ((Dependence_k_e_on_T(mt, 300.) / (100. * 100.)) * param.t0 / ((Dependence_C_l_on_T(mt, param.T00 * tmpi1[i][j][k]) / (100. * 100. * 100.)) * param.r0 * param.r0));
-//				A1[i][j][k] = ((Dependence_k_e_on_T(mt, param.T00 * tmpe1[i][j][k]) / (100.)) * param.t0 / ((spl_C_e_on_T.GetY(param.T00 * tmpe1[i][j][k]) / (100. * 100. * 100.)) * param.r0 * param.r0));
-//				B1[i][j][k] = (param.kabs * param.P0 * param.t0 * beta / ((spl_C_e_on_T.GetY(param.T00 * tmpe1[i][j][k]) / (100. * 100. * 100.)) * param.T00));
-//				CC1[i][j][k] = ((spl_G_e_on_T.GetY(param.T00 * tmpe1[i][j][k]) / (100. * 100. * 100.)) * param.t0 / ((spl_C_e_on_T.GetY(param.T00 * tmpe1[i][j][k]) / (100. * 100. * 100.))));
-//				CC2[i][j][k] = ((spl_G_e_on_T.GetY(param.T00 * tmpe1[i][j][k]) / (100. * 100. * 100.)) * param.t0 / ((Dependence_C_l_on_T(mt, param.T00 * tmpi1[i][j][k]) / (100. * 100. * 100.))));
-//			}
-//		}
-//	}
-//}
-
-void fun2(int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double& dt, double*** tmpe0, double*** tmpe1, double*** tmpe2, double*** tmpi0, double*** tmpi1, double*** tmpi2, double& A2,/*double*** A1, double*** A1i, double& A2, double*** B1, double*** CC1, double*** CC2,*/ /*double*** F,*/ /*double*** copy_tmpe1, double*** copy_tmpi1,*/ int& begin, int& end, Parametrs & param, vector<Melting> & Melt_metal, Metal mt, /*double*** Ci, double*** gamma,*/ bool& melting, Splayn & spl_G_e_on_T, Splayn  spl_C_e_on_T, double beta, int n, Splayn spl_C_l_on_T)
+void fun2(int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double& dt, double*** tmpe0, double*** tmpe1, double*** tmpe2, double*** tmpi0, double*** tmpi1, double*** tmpi2, double& A2,/*double*** A1, double*** A1i, double& A2, double*** B1, double*** CC1, double*** CC2,*/ /*double*** F,*/ /*double*** copy_tmpe1, double*** copy_tmpi1,*/ int& begin, int& end, Parametrs& param, vector<Melting>& Melt_metal, Metal mt, /*double*** Ci, double*** gamma,*/ bool& melting, Splayn& spl_G_e_on_T, Splayn spl_C_e_on_T, double beta, int n, Splayn spl_C_l_on_T)
 {
 	double A111 = 0, B111 = 0, A1i111 = 0, CC1111 = 0, CC2111 = 0, FFF = 0;
 	for (int k = begin; k < end; k++)
-	//for (int i = 1; i < Nx - 1; i++)
-	//for (int k = 1; k < Nz - 1; k++)
+		//for (int i = 1; i < Nx - 1; i++)
+		//for (int k = 1; k < Nz - 1; k++)
 	{
 		for (int j = 1; j < Ny - 1; j++)
 		{
 			for (int i = 1; i < Nx - 1; i++)
-			//for (int k = 1; k < Nz - 1; k++)
+				//for (int k = 1; k < Nz - 1; k++)
 			{
 				A1i111 = ((Dependence_k_e_on_T(mt, 300.) / (100. * 100.)) * param.t0 / ((Dependence_C_l_on_T(mt, param.T00 * tmpi1[i][j][k]) / (100. * 100. * 100.)) * param.r0 * param.r0));
 				A111 = ((Dependence_k_e_on_T(mt, param.T00 * tmpe1[i][j][k]) / (100.)) * param.t0 / ((spl_C_e_on_T.GetY(param.T00 * tmpe1[i][j][k]) / (100. * 100. * 100.)) * param.r0 * param.r0));
@@ -806,17 +814,6 @@ void fun2(int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double&
 				CC1111 = ((spl_G_e_on_T.GetY(param.T00 * tmpe1[i][j][k]) / (100. * 100. * 100.)) * param.t0 / ((spl_C_e_on_T.GetY(param.T00 * tmpe1[i][j][k]) / (100. * 100. * 100.))));
 				CC2111 = ((spl_G_e_on_T.GetY(param.T00 * tmpe1[i][j][k]) / (100. * 100. * 100.)) * param.t0 / ((Dependence_C_l_on_T(mt, param.T00 * tmpi1[i][j][k]) / (100. * 100. * 100.))));
 				FFF = exp(-dx * dx * (i - Nx / 2) * (i - Nx / 2)) * exp(-dy * dy * (j - Ny / 2) * (j - Ny / 2)) * exp(-dz * k) * dt * n * exp(-beta * dt * n);
-
-				////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-				/*if ((tmpi1[i][j][k] * param.T00) >= 1335.)
-				{
-					A1i111 = ((Dependence_k_e_on_T(mt, 300.) / (100. * 100.)) * param.t0 / (spl_C_l_on_T.GetY(param.T00 * tmpi1[i][j][k]) * param.r0 * param.r0));
-					CC2111 = ((spl_G_e_on_T.GetY(param.T00 * tmpe1[i][j][k]) / (100. * 100. * 100.)) * param.t0 / (spl_C_l_on_T.GetY(param.T00 * tmpi1[i][j][k])));
-				}*/
-
-				////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 				tmpe2[i][j][k] = tmpe0[i][j][k] * (1 - 2 * dt * /*A1[i][j][k]*/ A111 / (dx * dx) - 2 * dt * /*A1[i][j][k]*/ A111 / (dy * dy) - 2 * dt * /*A1[i][j][k]*/ A111 * A2 / (dz * dz))
 					+ 2 * dt */* A1[i][j][k]*/ A111 * ((tmpe1[i + 1][j][k] + tmpe1[i - 1][j][k]) / (dx * dx) + (tmpe1[i][j + 1][k] + tmpe1[i][j - 1][k]) / (dy * dy) + A2 * (tmpe1[i][j][k - 1] + tmpe1[i][j][k + 1]) / (dz * dz))
@@ -839,11 +836,13 @@ void fun2(int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double&
 				if ((tmpi1[i][j][k] * param.T00) >= (Melt_metal[mt].T_melting - delta) && (tmpi1[i][j][k] * param.T00) <= (Melt_metal[mt].T_melting + delta))
 				{
 					//melting = true;
-				/*	A1i111 = (Dependence_k_e_on_T(mt, 300.) / (100. * 100.)) * param.t0 / ((Dependence_C_l_on_T(mt, param.T00 * tmpi1[i][j][k]) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * delta)) * param.r0 * param.r0);
+					// старый способ расплава
+					/*A1i111 = (Dependence_k_e_on_T(mt, 300.) / (100. * 100.)) * param.t0 / ((Dependence_C_l_on_T(mt, param.T00 * tmpi1[i][j][k]) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * delta)) * param.r0 * param.r0);
 					CC2111 = (spl_G_e_on_T.GetY(param.T00 * tmpe1[i][j][k]) / (100. * 100. * 100.)) * param.t0 / ((Dependence_C_l_on_T(mt, param.T00 * tmpi1[i][j][k]) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * delta)));*/
 
 					/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+					// новый способ расплава
 					A1i111 = (Dependence_k_e_on_T(mt, 300.) / (100. * 100.)) * param.t0 / ((/*Dependence_C_l_on_T(mt, param.T00 * tmpi1[i][j][k]) / (100. * 100. * 100.) +*/ spl_C_l_on_T.GetY(param.T00 * tmpi1[i][j][k])) * param.r0 * param.r0);
 					CC2111 = (spl_G_e_on_T.GetY(param.T00 * tmpe1[i][j][k]) / (100. * 100. * 100.)) * param.t0 / ((/*Dependence_C_l_on_T(mt, param.T00 * tmpi1[i][j][k]) / (100. * 100. * 100.) + */ spl_C_l_on_T.GetY(param.T00 * tmpi1[i][j][k])));
 
@@ -876,7 +875,7 @@ void fun2(int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double&
 	}
 }
 
-void fun21(int& Nx, int& Ny, int& Nz, double*** tmpe2, double*** tmpi1, double*** tmpi2, /*double** fict_masive,*/ double& dz, Parametrs & param, Metal mt)
+void fun21(int& Nx, int& Ny, int& Nz, double*** tmpe2, double*** tmpi1, double*** tmpi2, /*double** fict_masive,*/ double& dz, Parametrs& param, Metal mt)
 {
 	double a4, a5, T_air = 300, eps = 0.1, sigma = 5.67e-12; // Вт/см2 К4 //???????????????
 	double h_c = 0.0015; // Вт/cm2 K
@@ -928,17 +927,17 @@ void fun23(int& Nx, int& Ny, int& Nz, double*** tmpe2, double*** tmpi2)
 	}
 }
 
-void Calculation0(Metal mt, Parametrs & param, Splayn & spl_C_e_on_T, Splayn & spl_G_e_on_T,/* double*** F,*/ TypeBeam tbeam, double*** tmpe0, double*** tmpe1, double*** tmpe2, double*** tmpi0, double*** tmpi1, double*** tmpi2, double& A2, /*double*** A1, double*** A1i, double& A2, double*** B1, double*** CC1, double*** CC2,*/ double& dx, double& dy, double& dz, double& dt, int& Nx, int& Ny, int& Nz, /*double*** Ce, double*** kte, double*** kti, double*** gamma, double*** Ci*/ int& n, double& beta, /*double*** copy_tmpe1, double*** copy_tmpi1,*/ vector<Interval> & new_interv,/* double** fict_masive,*/ vector<Melting> & Melt_metal, bool& melting, Splayn spl_C_l_on_T)
+void Calculation0(Metal mt, Parametrs& param, Splayn& spl_C_e_on_T, Splayn& spl_G_e_on_T,/* double*** F,*/ TypeBeam tbeam, double*** tmpe0, double*** tmpe1, double*** tmpe2, double*** tmpi0, double*** tmpi1, double*** tmpi2,/* double& A1,*/ double& A2, /*double& B1, double& CC1, double& CC2,*/ double& dx, double& dy, double& dz, double& dt, int& Nx, int& Ny, int& Nz, int& n, double& beta, vector<Interval>& new_interv,/* double** fict_masive,*/ vector<Melting>& Melt_metal, bool& melting, Splayn spl_C_l_on_T)
 {
-	if (tbeam == Gauss)
-	{
-		//	GaussBeam(F, Nx, Ny, Nz, dx, dy, dz, dt, n, beta);
-	}
+	//if (tbeam == Gauss)
+	//{
+	//	//GaussBeam(F, Nx, Ny, Nz, dx, dy, dz, dt, n, beta);
+	//}
 
-	if (tbeam == Vortex)
-	{
-		//VortexBeam(F, Nx, Ny, Nz, dx, dy, dz, dt, n, beta, 1);
-	}
+	//if (tbeam == Vortex)
+	//{
+	////	VortexBeam(F, Nx, Ny, Nz, dx, dy, dz, dt, n, beta, 1);
+	//}
 
 	//fun2(ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, ref(A2), /* A1, A1i, ref(A2), B1, CC1, CC2, F,*/ /*copy_tmpe1, copy_tmpi1,*/ ref(new_interv[0].begin), ref(new_interv[0].end), ref(param), ref(Melt_metal), mt, /*Ci, gamma,*/ ref(melting), ref(spl_G_e_on_T), spl_C_e_on_T, beta, n);
 
@@ -973,7 +972,7 @@ void Calculation0(Metal mt, Parametrs & param, Splayn & spl_C_e_on_T, Splayn & s
 	t53.join(); ////////////////////////////////////
 }
 
-void Calculation1b2y(int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double& dt, double& CC0, double*** e1, double*** a1x, double*** a1z, double*** b1y, /*double*** b2y,*/ int& begin, int& end)
+void Calculation1b2y(int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double& dt, double& CC0, double*** e1, double*** a1x, double*** a1z, double*** b1y, double*** b2y, int& begin, int& end)
 {
 	/*for (int i = 0; i < Nx; i++)*/
 	for (int l = begin; l < end; l++)
@@ -983,7 +982,7 @@ void Calculation1b2y(int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& 
 		for (int j = 0; j < Ny; j++)
 		{
 			for (int i = 0; i < Nx; i++)
-			//for (int l = 0; l < Nz; l++)
+				//for (int l = 0; l < Nz; l++)
 			{
 				if ((i - 1) < 0 || (i + 1) > (Nx - 1) || (j - 1) < 0 || (j + 1) > (Ny - 1) || (l - 1) < 0 || (l + 1) > (Nz - 1))
 				{
@@ -993,25 +992,25 @@ void Calculation1b2y(int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& 
 				}
 				else
 				{
-					b1y[i][j][l] = b1y[i][j][l] + dt * CC0 * (e1[i][j][l] - e1[i - 1][j][l]) * ((a1x[i][j + 1][l] - a1x[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l]) - (a1x[i][j][l + 1] - a1x[i][j][l]) * (a1z[i][j + 1][l] - a1z[i][j][l])) / (dx * dy * dz);
-					b1y[i][j][l] = b1y[i][j][l] + dt * CC0 * (e1[i][j][l] - e1[i][j - 1][l]) * ((a1x[i][j][l + 1] - a1x[i][j][l]) * (a1z[i + 1][j][l] - a1z[i][j][l]) - (a1x[i + 1][j][l] - a1x[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l])) / (dx * dy * dz);
-					b1y[i][j][l] = b1y[i][j][l] + dt * CC0 * (e1[i][j][l] - e1[i][j][l - 1]) * ((a1x[i + 1][j][l] - a1x[i][j][l]) * (a1z[i][j + 1][l] - a1z[i][j][l]) - (a1x[i][j + 1][l] - a1x[i][j][l]) * (a1z[i + 1][j][l] - a1z[i][j][l])) / (dx * dy * dz);
+					b2y[i][j][l] = b1y[i][j][l] + dt * CC0 * (e1[i][j][l] - e1[i - 1][j][l]) * ((a1x[i][j + 1][l] - a1x[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l]) - (a1x[i][j][l + 1] - a1x[i][j][l]) * (a1z[i][j + 1][l] - a1z[i][j][l])) / (dx * dy * dz);
+					b2y[i][j][l] = b2y[i][j][l] + dt * CC0 * (e1[i][j][l] - e1[i][j - 1][l]) * ((a1x[i][j][l + 1] - a1x[i][j][l]) * (a1z[i + 1][j][l] - a1z[i][j][l]) - (a1x[i + 1][j][l] - a1x[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l])) / (dx * dy * dz);
+					b2y[i][j][l] = b2y[i][j][l] + dt * CC0 * (e1[i][j][l] - e1[i][j][l - 1]) * ((a1x[i + 1][j][l] - a1x[i][j][l]) * (a1z[i][j + 1][l] - a1z[i][j][l]) - (a1x[i][j + 1][l] - a1x[i][j][l]) * (a1z[i + 1][j][l] - a1z[i][j][l])) / (dx * dy * dz);
 				}
 			}
 		}
 	}
 }
 
-void Calculation1b2z(int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double& dt, double*** e1, double*** a1x, double*** a1y, double*** b1z, /*double*** b2z,*/ int& begin, int& end)
+void Calculation1b2z(int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double& dt, double*** e1, double*** a1x, double*** a1y, double*** b1z, double*** b2z, int& begin, int& end)
 {
 	/*for (int i = 0; i < Nx; i++)*/
 	for (int l = begin; l < end; l++)
-	//for (int i = 0; i < Nx; i++)
+		//for (int i = 0; i < Nx; i++)
 	{
 		for (int j = 0; j < Ny; j++)
 		{
 			for (int i = 0; i < Nx; i++)
-			//for (int l = 0; l < Nz; l++)
+				//for (int l = 0; l < Nz; l++)
 			{
 				if ((i - 1) < 0 || (i + 1) > (Nx - 1) || (j - 1) < 0 || (j + 1) > (Ny - 1) || (l - 1) < 0 || (l + 1) > (Nz - 1))
 				{
@@ -1021,19 +1020,19 @@ void Calculation1b2z(int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& 
 				}
 				else
 				{
-					b1z[i][j][l] = b1z[i][j][l] + dt * (e1[i][j][l] - e1[i - 1][j][l]) * ((a1x[i][j][l + 1] - a1x[i][j][l]) * (a1y[i][j + 1][l] - a1y[i][j][l]) - (a1x[i][j + 1][l] - a1x[i][j][l]) * (a1y[i][j][l + 1] - a1y[i][j][l])) / (dx * dy * dz);
-					b1z[i][j][l] = b1z[i][j][l] + dt * (e1[i][j][l] - e1[i][j - 1][l]) * ((a1x[i + 1][j][l] - a1x[i][j][l]) * (a1y[i][j][l + 1] - a1y[i][j][l]) - (a1x[i][j][l + 1] - a1x[i][j][l]) * (a1y[i + 1][j][l] - a1y[i][j][l])) / (dx * dy * dz);
-					b1z[i][j][l] = b1z[i][j][l] + dt * (e1[i][j][l] - e1[i][j][l - 1]) * ((a1x[i][j + 1][l] - a1x[i][j][l]) * (a1y[i + 1][j][l] - a1y[i][j][l]) - (a1x[i + 1][j][l] - a1x[i][j][l]) * (a1y[i][j + 1][l] - a1y[i][j][l])) / (dx * dy * dz);
+					b2z[i][j][l] = b1z[i][j][l] + dt * (e1[i][j][l] - e1[i - 1][j][l]) * ((a1x[i][j][l + 1] - a1x[i][j][l]) * (a1y[i][j + 1][l] - a1y[i][j][l]) - (a1x[i][j + 1][l] - a1x[i][j][l]) * (a1y[i][j][l + 1] - a1y[i][j][l])) / (dx * dy * dz);
+					b2z[i][j][l] = b2z[i][j][l] + dt * (e1[i][j][l] - e1[i][j - 1][l]) * ((a1x[i + 1][j][l] - a1x[i][j][l]) * (a1y[i][j][l + 1] - a1y[i][j][l]) - (a1x[i][j][l + 1] - a1x[i][j][l]) * (a1y[i + 1][j][l] - a1y[i][j][l])) / (dx * dy * dz);
+					b2z[i][j][l] = b2z[i][j][l] + dt * (e1[i][j][l] - e1[i][j][l - 1]) * ((a1x[i][j + 1][l] - a1x[i][j][l]) * (a1y[i + 1][j][l] - a1y[i][j][l]) - (a1x[i + 1][j][l] - a1x[i][j][l]) * (a1y[i][j + 1][l] - a1y[i][j][l])) / (dx * dy * dz);
 				}
 			}
 		}
 	}
 }
 
-void Calculation1b2xPart1(int& Ny, int& Nz, double& dx, double& dy, double& dz, double& dt, double*** e1, double*** a1y, double*** a1z, double*** b1x, double& CC0, int& begin, int& end)
+void Calculation1b2xPart1(int& Ny, int& Nz, double& dx, double& dy, double& dz, double& dt, double*** e1, double*** a1y, double*** a1z, double*** b1x, double*** b2x, double& CC0, int& begin, int& end)
 {
 	for (int l = begin; l < end; l++)
-	//for (int j = 0; j < Ny; j++)//????????????????????????????????????????????????????????????????????????
+		//for (int j = 0; j < Ny; j++)//????????????????????????????????????????????????????????????????????????
 	{// Или тут рассчитываются только внутренние узлы???????????????????????????????????И почему тут часть кода рабоатет???????????
 		//for (int l = 0; l < Nz; l++)
 		for (int j = 0; j < Ny; j++)
@@ -1047,23 +1046,23 @@ void Calculation1b2xPart1(int& Ny, int& Nz, double& dx, double& dy, double& dz, 
 			}
 			else {
 				//cout << j << "  " << l << endl;
-				b1x[0][j][l] = b1x[0][j][l] + dt * CC0 * (e1[1][j][l] - e1[0][j][l]) * (-(a1y[0][j + 1][l] - a1y[0][j][l]) * (a1z[0][j][l + 1] - a1z[0][j][l]) + (a1y[0][j][l + 1] - a1y[0][j][l]) * (a1z[0][j + 1][l] - a1z[0][j][l])) / (dx * dy * dz);
-				b1x[0][j][l] = b1x[0][j][l] + dt * CC0 * (e1[0][j][l] - e1[0][j - 1][l]) * ((a1y[1][j][l] - a1y[0][j][l]) * (a1z[0][j][l + 1] - a1z[0][j][l]) - (a1y[0][j][l + 1] - a1y[0][j][l]) * (a1z[0][j][l + 1] - a1z[0][j][l])) / (dx * dy * dz);
-				b1x[0][j][l] = b1x[0][j][l] + dt * CC0 * (e1[0][j][l] - e1[0][j][l - 1]) * ((a1y[0][j + 1][l] - a1y[0][j][l]) * (a1z[1][j][l] - a1z[0][j][l]) - (a1y[0][j + 1][l] - a1y[0][j][l]) * (a1z[0][j + 1][l] - a1z[0][j][l])) / (dx * dy * dz);
+				b2x[0][j][l] = b1x[0][j][l] + dt * CC0 * (e1[1][j][l] - e1[0][j][l]) * (-(a1y[0][j + 1][l] - a1y[0][j][l]) * (a1z[0][j][l + 1] - a1z[0][j][l]) + (a1y[0][j][l + 1] - a1y[0][j][l]) * (a1z[0][j + 1][l] - a1z[0][j][l])) / (dx * dy * dz);
+				b2x[0][j][l] = b2x[0][j][l] + dt * CC0 * (e1[0][j][l] - e1[0][j - 1][l]) * ((a1y[1][j][l] - a1y[0][j][l]) * (a1z[0][j][l + 1] - a1z[0][j][l]) - (a1y[0][j][l + 1] - a1y[0][j][l]) * (a1z[0][j][l + 1] - a1z[0][j][l])) / (dx * dy * dz);
+				b2x[0][j][l] = b2x[0][j][l] + dt * CC0 * (e1[0][j][l] - e1[0][j][l - 1]) * ((a1y[0][j + 1][l] - a1y[0][j][l]) * (a1z[1][j][l] - a1z[0][j][l]) - (a1y[0][j + 1][l] - a1y[0][j][l]) * (a1z[0][j + 1][l] - a1z[0][j][l])) / (dx * dy * dz);
 			}
 		}
 	}
 }
 
-void Calculation1b2xPart2(int& Nx,int& Ny, int& Nz, double& dx, double& dy, double& dz, double& dt, double*** e1, double*** a1y, double*** a1z, double*** b1x, double& CC0, int& begin, int& end)
+void Calculation1b2xPart2(int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double& dt, double*** e1, double*** a1y, double*** a1z, double*** b1x, double*** b2x, double& CC0, int& begin, int& end)
 {
 	for (int l = begin; l < end; l++)
-	//for (int i = 1; i < Nx - 1; i++)
+		//for (int i = 1; i < Nx - 1; i++)
 	{
 		for (int j = 0; j < Ny; j++)
 		{
 			for (int i = 1; i < Nx - 1; i++)
-			//for (int l = 0; l < Nz; l++)
+				//for (int l = 0; l < Nz; l++)
 			{
 				if ((j - 1) < 0 || (j + 1) > (Ny - 1) || (l - 1) < 0 || (l + 1) > (Nz - 1))
 				{
@@ -1073,64 +1072,40 @@ void Calculation1b2xPart2(int& Nx,int& Ny, int& Nz, double& dx, double& dy, doub
 				}
 				else
 				{
-					b1x[i][j][l] = b1x[i][j][l] + dt * CC0 * (e1[i][j][l] - e1[i - 1][j][l]) * (-(a1y[i][j + 1][l] - a1y[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l]) + (a1y[i][j][l + 1] - a1y[i][j][l]) * (a1z[i][j + 1][l] - a1z[i][j][l])) / (dx * dy * dz);
-					b1x[i][j][l] = b1x[i][j][l] + dt * CC0 * (e1[i][j][l] - e1[i][j - 1][l]) * ((a1y[i + 1][j][l] - a1y[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l]) - (a1y[i][j][l + 1] - a1y[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l])) / (dx * dy * dz);
-					b1x[i][j][l] = b1x[i][j][l] + dt * CC0 * (e1[i][j][l] - e1[i][j][l - 1]) * ((a1y[i][j + 1][l] - a1y[i][j][l]) * (a1z[i + 1][j][l] - a1z[i][j][l]) - (a1y[i][j + 1][l] - a1y[i][j][l]) * (a1z[i][j + 1][l] - a1z[i][j][l])) / (dx * dy * dz);
+					b2x[i][j][l] = b1x[i][j][l] + dt * CC0 * (e1[i][j][l] - e1[i - 1][j][l]) * (-(a1y[i][j + 1][l] - a1y[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l]) + (a1y[i][j][l + 1] - a1y[i][j][l]) * (a1z[i][j + 1][l] - a1z[i][j][l])) / (dx * dy * dz);
+					b2x[i][j][l] = b2x[i][j][l] + dt * CC0 * (e1[i][j][l] - e1[i][j - 1][l]) * ((a1y[i + 1][j][l] - a1y[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l]) - (a1y[i][j][l + 1] - a1y[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l])) / (dx * dy * dz);
+					b2x[i][j][l] = b2x[i][j][l] + dt * CC0 * (e1[i][j][l] - e1[i][j][l - 1]) * ((a1y[i][j + 1][l] - a1y[i][j][l]) * (a1z[i + 1][j][l] - a1z[i][j][l]) - (a1y[i][j + 1][l] - a1y[i][j][l]) * (a1z[i][j + 1][l] - a1z[i][j][l])) / (dx * dy * dz);
 				}
 			}
 		}
 	}
 }
 
-void Calculation1(double*** a1x,/* double*** a2x,*/ double*** b1x, /*double*** b2x,*/ double*** a1z, double*** b1y, /*double*** b2y,*/ double*** b1z,/* double*** b2z, */double*** a1y, double*** e1, double& dx, double& dy, double& dz, double& dt, double& CC0, int& Nx, int& Ny, int& Nz, vector<Interval> & new_interv_z)
+void EqMotio(double*** a1x, double*** a2x, double*** b1x, double*** b2x, double*** a1z, double*** b1y, double*** b2y, double*** b1z, double*** b2z, double*** a1y, double*** e1, double& dx, double& dy, double& dz, double& dt, double& CC0, int& Nx, int& Ny, int& Nz)
 {
-	// Calculation 1
-	// solving the equation of motion
 
-	/*std::thread t111(Calculation1b2xPart1, ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, ref(CC0), ref(new_interv_z[0].begin), ref(new_interv_z[0].end));
-	std::thread t212(Calculation1b2xPart1, ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, ref(CC0), ref(new_interv_z[1].begin), ref(new_interv_z[1].end));
-	std::thread t313(Calculation1b2xPart1, ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, ref(CC0), ref(new_interv_z[2].begin), ref(new_interv_z[2].end));
-	std::thread t414(Calculation1b2xPart1, ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, ref(CC0), ref(new_interv_z[3].begin), ref(new_interv_z[3].end));
-	std::thread t515(Calculation1b2xPart1, ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, ref(CC0), ref(new_interv_z[4].begin), ref(new_interv_z[4].end));
-	std::thread t616(Calculation1b2xPart1, ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, ref(CC0), ref(new_interv_z[5].begin), ref(new_interv_z[5].end));
-	std::thread t717(Calculation1b2xPart1, ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, ref(CC0), ref(new_interv_z[6].begin), ref(new_interv_z[6].end));
-	std::thread t818(Calculation1b2xPart1, ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, ref(CC0), ref(new_interv_z[7].begin), ref(new_interv_z[7].end));
-	std::thread t919(Calculation1b2xPart1, ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, ref(CC0), ref(new_interv_z[8].begin), ref(new_interv_z[8].end));
-	std::thread t1010(Calculation1b2xPart1, ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, ref(CC0), ref(new_interv_z[9].begin), ref(new_interv_z[9].end));
+	/*std::thread t1(Calculation1b2y, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), ref(CC0), e1, a1x, a1z, b1y, b2y, ref(new_interv_z[0].begin), ref(new_interv_z[0].end));
+	std::thread t2(Calculation1b2y, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), ref(CC0), e1, a1x, a1z, b1y, b2y, ref(new_interv_z[1].begin), ref(new_interv_z[1].end));
+	std::thread t3(Calculation1b2y, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), ref(CC0), e1, a1x, a1z, b1y, b2y, ref(new_interv_z[2].begin), ref(new_interv_z[2].end));
+	std::thread t4(Calculation1b2y, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), ref(CC0), e1, a1x, a1z, b1y, b2y, ref(new_interv_z[3].begin), ref(new_interv_z[3].end));
+	std::thread t5(Calculation1b2y, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), ref(CC0), e1, a1x, a1z, b1y, b2y, ref(new_interv_z[4].begin), ref(new_interv_z[4].end));
+	std::thread t6(Calculation1b2y, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), ref(CC0), e1, a1x, a1z, b1y, b2y, ref(new_interv_z[5].begin), ref(new_interv_z[5].end));
+	std::thread t7(Calculation1b2y, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), ref(CC0), e1, a1x, a1z, b1y, b2y, ref(new_interv_z[6].begin), ref(new_interv_z[6].end));
+	std::thread t8(Calculation1b2y, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), ref(CC0), e1, a1x, a1z, b1y, b2y, ref(new_interv_z[7].begin), ref(new_interv_z[7].end));
+	std::thread t9(Calculation1b2y, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), ref(CC0), e1, a1x, a1z, b1y, b2y, ref(new_interv_z[8].begin), ref(new_interv_z[8].end));
+	std::thread t10(Calculation1b2y, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), ref(CC0), e1, a1x, a1z, b1y, b2y, ref(new_interv_z[9].begin), ref(new_interv_z[9].end));
 
-	t111.join();
-	t212.join();
-	t313.join();
-	t414.join();
-	t515.join();
-	t616.join();
-	t717.join();
-	t818.join();
-	t919.join();
-	t1010.join();
+	t1.join();
+	t2.join();
+	t3.join();
+	t4.join();
+	t5.join();
+	t6.join();
+	t7.join();
+	t8.join();
+	t9.join();
+	t10.join();*/
 
-
-	std::thread t121(Calculation1b2xPart2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, ref(CC0), ref(new_interv_z[0].begin), ref(new_interv_z[0].end));
-	std::thread t221(Calculation1b2xPart2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, ref(CC0), ref(new_interv_z[1].begin), ref(new_interv_z[1].end));
-	std::thread t321(Calculation1b2xPart2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, ref(CC0), ref(new_interv_z[2].begin), ref(new_interv_z[2].end));
-	std::thread t421(Calculation1b2xPart2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, ref(CC0), ref(new_interv_z[3].begin), ref(new_interv_z[3].end));
-	std::thread t521(Calculation1b2xPart2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, ref(CC0), ref(new_interv_z[4].begin), ref(new_interv_z[4].end));
-	std::thread t621(Calculation1b2xPart2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, ref(CC0), ref(new_interv_z[5].begin), ref(new_interv_z[5].end));
-	std::thread t721(Calculation1b2xPart2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, ref(CC0), ref(new_interv_z[6].begin), ref(new_interv_z[6].end));
-	std::thread t821(Calculation1b2xPart2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, ref(CC0), ref(new_interv_z[7].begin), ref(new_interv_z[7].end));
-	std::thread t921(Calculation1b2xPart2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, ref(CC0), ref(new_interv_z[8].begin), ref(new_interv_z[8].end));
-	std::thread t1021(Calculation1b2xPart2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, ref(CC0), ref(new_interv_z[9].begin), ref(new_interv_z[9].end));
-
-	t121.join();
-	t221.join();
-	t321.join();
-	t421.join();
-	t521.join();
-	t621.join();
-	t721.join();
-	t821.join();
-	t921.join();
-	t1021.join();*/
 
 	for (int j = 0; j < Ny; j++)//????????????????????????????????????????????????????????????????????????
 	{// Или тут рассчитываются только внутренние узлы???????????????????????????????????И почему тут часть кода рабоатет???????????
@@ -1145,9 +1120,10 @@ void Calculation1(double*** a1x,/* double*** a2x,*/ double*** b1x, /*double*** b
 			}
 			else {
 				//cout << j << "  " << l << endl;
-				b1x[0][j][l] = b1x[0][j][l] + dt * CC0 * (e1[1][j][l] - e1[0][j][l]) * (-(a1y[0][j + 1][l] - a1y[0][j][l]) * (a1z[0][j][l + 1] - a1z[0][j][l]) + (a1y[0][j][l + 1] - a1y[0][j][l]) * (a1z[0][j + 1][l] - a1z[0][j][l])) / (dx * dy * dz);
-				b1x[0][j][l] = b1x[0][j][l] + dt * CC0 * (e1[0][j][l] - e1[0][j - 1][l]) * ((a1y[1][j][l] - a1y[0][j][l]) * (a1z[0][j][l + 1] - a1z[0][j][l]) - (a1y[0][j][l + 1] - a1y[0][j][l]) * (a1z[0][j][l + 1] - a1z[0][j][l])) / (dx * dy * dz);
-				b1x[0][j][l] = b1x[0][j][l] + dt * CC0 * (e1[0][j][l] - e1[0][j][l - 1]) * ((a1y[0][j + 1][l] - a1y[0][j][l]) * (a1z[1][j][l] - a1z[0][j][l]) - (a1y[0][j + 1][l] - a1y[0][j][l]) * (a1z[0][j + 1][l] - a1z[0][j][l])) / (dx * dy * dz);
+				b2x[0][j][l] = b1x[0][j][l] + dt * CC0 * (e1[1][j][l] - e1[0][j][l]) * (-(a1y[0][j + 1][l] - a1y[0][j][l]) * (a1z[0][j][l + 1] - a1z[0][j][l]) + (a1y[0][j][l + 1] - a1y[0][j][l]) * (a1z[0][j + 1][l] - a1z[0][j][l])) / (dx * dy * dz);
+				b2x[0][j][l] = b2x[0][j][l] + dt * CC0 * (e1[0][j][l] - e1[0][j - 1][l]) * ((a1y[1][j][l] - a1y[0][j][l]) * (a1z[0][j][l + 1] - a1z[0][j][l]) - (a1y[0][j][l + 1] - a1y[0][j][l]) * (a1z[0][j][l + 1] - a1z[0][j][l])) / (dx * dy * dz);
+				b2x[0][j][l] = b2x[0][j][l] + dt * CC0 * (e1[0][j][l] - e1[0][j][l - 1]) * ((a1y[0][j + 1][l] - a1y[0][j][l]) * (a1z[1][j][l] - a1z[0][j][l]) - (a1y[0][j + 1][l] - a1y[0][j][l]) * (a1z[0][j + 1][l] - a1z[0][j][l])) / (dx * dy * dz);
+
 			}
 		}
 	}
@@ -1166,371 +1142,233 @@ void Calculation1(double*** a1x,/* double*** a2x,*/ double*** b1x, /*double*** b
 				}
 				else
 				{
-					b1x[i][j][l] = b1x[i][j][l] + dt * CC0 * (e1[i][j][l] - e1[i - 1][j][l]) * (-(a1y[i][j + 1][l] - a1y[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l]) + (a1y[i][j][l + 1] - a1y[i][j][l]) * (a1z[i][j + 1][l] - a1z[i][j][l])) / (dx * dy * dz);
-					b1x[i][j][l] = b1x[i][j][l] + dt * CC0 * (e1[i][j][l] - e1[i][j - 1][l]) * ((a1y[i + 1][j][l] - a1y[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l]) - (a1y[i][j][l + 1] - a1y[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l])) / (dx * dy * dz);
-					b1x[i][j][l] = b1x[i][j][l] + dt * CC0 * (e1[i][j][l] - e1[i][j][l - 1]) * ((a1y[i][j + 1][l] - a1y[i][j][l]) * (a1z[i + 1][j][l] - a1z[i][j][l]) - (a1y[i][j + 1][l] - a1y[i][j][l]) * (a1z[i][j + 1][l] - a1z[i][j][l])) / (dx * dy * dz);
+					b2x[i][j][l] = b1x[i][j][l] + dt * CC0 * (e1[i][j][l] - e1[i - 1][j][l]) * (-(a1y[i][j + 1][l] - a1y[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l]) + (a1y[i][j][l + 1] - a1y[i][j][l]) * (a1z[i][j + 1][l] - a1z[i][j][l])) / (dx * dy * dz);
+					b2x[i][j][l] = b2x[i][j][l] + dt * CC0 * (e1[i][j][l] - e1[i][j - 1][l]) * ((a1y[i + 1][j][l] - a1y[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l]) - (a1y[i][j][l + 1] - a1y[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l])) / (dx * dy * dz);
+					b2x[i][j][l] = b2x[i][j][l] + dt * CC0 * (e1[i][j][l] - e1[i][j][l - 1]) * ((a1y[i][j + 1][l] - a1y[i][j][l]) * (a1z[i + 1][j][l] - a1z[i][j][l]) - (a1y[i][j + 1][l] - a1y[i][j][l]) * (a1z[i][j + 1][l] - a1z[i][j][l])) / (dx * dy * dz);
 				}
 			}
 		}
 	}
 
+	//std::thread t111(Calculation1b2xPart1, ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, b2x, ref(CC0), ref(new_interv_z[0].begin), ref(new_interv_z[0].end));
+	//std::thread t212(Calculation1b2xPart1, ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, b2x, ref(CC0), ref(new_interv_z[1].begin), ref(new_interv_z[1].end));
+	//std::thread t313(Calculation1b2xPart1, ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, b2x, ref(CC0), ref(new_interv_z[2].begin), ref(new_interv_z[2].end));
+	//std::thread t414(Calculation1b2xPart1, ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, b2x, ref(CC0), ref(new_interv_z[3].begin), ref(new_interv_z[3].end));
+	//std::thread t515(Calculation1b2xPart1, ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, b2x, ref(CC0), ref(new_interv_z[4].begin), ref(new_interv_z[4].end));
+	//std::thread t616(Calculation1b2xPart1, ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, b2x, ref(CC0), ref(new_interv_z[5].begin), ref(new_interv_z[5].end));
+	//std::thread t717(Calculation1b2xPart1, ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, b2x, ref(CC0), ref(new_interv_z[6].begin), ref(new_interv_z[6].end));
+	//std::thread t818(Calculation1b2xPart1, ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, b2x, ref(CC0), ref(new_interv_z[7].begin), ref(new_interv_z[7].end));
+	//std::thread t919(Calculation1b2xPart1, ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, b2x, ref(CC0), ref(new_interv_z[8].begin), ref(new_interv_z[8].end));
+	//std::thread t1010(Calculation1b2xPart1, ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, b2x, ref(CC0), ref(new_interv_z[9].begin), ref(new_interv_z[9].end));
+
+	//t111.join();
+	//t212.join();
+	//t313.join();
+	//t414.join();
+	//t515.join();
+	//t616.join();
+	//t717.join();
+	//t818.join();
+	//t919.join();
+	//t1010.join();
+
+
+	//std::thread t121(Calculation1b2xPart2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, b2x, ref(CC0), ref(new_interv_z[0].begin), ref(new_interv_z[0].end));
+	//std::thread t221(Calculation1b2xPart2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, b2x, ref(CC0), ref(new_interv_z[1].begin), ref(new_interv_z[1].end));
+	//std::thread t321(Calculation1b2xPart2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, b2x, ref(CC0), ref(new_interv_z[2].begin), ref(new_interv_z[2].end));
+	//std::thread t421(Calculation1b2xPart2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, b2x, ref(CC0), ref(new_interv_z[3].begin), ref(new_interv_z[3].end));
+	//std::thread t521(Calculation1b2xPart2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, b2x, ref(CC0), ref(new_interv_z[4].begin), ref(new_interv_z[4].end));
+	//std::thread t621(Calculation1b2xPart2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, b2x, ref(CC0), ref(new_interv_z[5].begin), ref(new_interv_z[5].end));
+	//std::thread t721(Calculation1b2xPart2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, b2x, ref(CC0), ref(new_interv_z[6].begin), ref(new_interv_z[6].end));
+	//std::thread t821(Calculation1b2xPart2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, b2x, ref(CC0), ref(new_interv_z[7].begin), ref(new_interv_z[7].end));
+	//std::thread t921(Calculation1b2xPart2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, b2x, ref(CC0), ref(new_interv_z[8].begin), ref(new_interv_z[8].end));
+	//std::thread t1021(Calculation1b2xPart2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1y, a1z, b1x, b2x, ref(CC0), ref(new_interv_z[9].begin), ref(new_interv_z[9].end));
+
+	//t121.join();
+	//t221.join();
+	//t321.join();
+	//t421.join();
+	//t521.join();
+	//t621.join();
+	//t721.join();
+	//t821.join();
+	//t921.join();
+	//t1021.join();
 
 	//Calculation1b2y(ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), ref(CC0), e1, a1x, a1z, b1y, /*b2y,*/ ref(new_interv_z[0].begin), ref(new_interv_z[0].end));
 
-	std::thread t1(Calculation1b2y, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), ref(CC0), e1, a1x, a1z, b1y, /*b2y,*/ ref(new_interv_z[0].begin), ref(new_interv_z[0].end));
-	std::thread t2(Calculation1b2y, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), ref(CC0), e1, a1x, a1z, b1y, /*b2y*/ ref(new_interv_z[1].begin), ref(new_interv_z[1].end));
-	std::thread t3(Calculation1b2y, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), ref(CC0), e1, a1x, a1z, b1y, /*b2y,*/ ref(new_interv_z[2].begin), ref(new_interv_z[2].end));
-	std::thread t4(Calculation1b2y, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), ref(CC0), e1, a1x, a1z, b1y, /*b2y,*/ ref(new_interv_z[3].begin), ref(new_interv_z[3].end));
-	std::thread t5(Calculation1b2y, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), ref(CC0), e1, a1x, a1z, b1y,/* b2y,*/ ref(new_interv_z[4].begin), ref(new_interv_z[4].end));
-	std::thread t6(Calculation1b2y, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), ref(CC0), e1, a1x, a1z, b1y, /*b2y,*/ ref(new_interv_z[5].begin), ref(new_interv_z[5].end));
-	std::thread t7(Calculation1b2y, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), ref(CC0), e1, a1x, a1z, b1y, /*b2y,*/ ref(new_interv_z[6].begin), ref(new_interv_z[6].end));
-	std::thread t8(Calculation1b2y, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), ref(CC0), e1, a1x, a1z, b1y,/* b2y,*/ ref(new_interv_z[7].begin), ref(new_interv_z[7].end));
-	std::thread t9(Calculation1b2y, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), ref(CC0), e1, a1x, a1z, b1y, /*b2y,*/ ref(new_interv_z[8].begin), ref(new_interv_z[8].end));
-	std::thread t10(Calculation1b2y, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), ref(CC0), e1, a1x, a1z, b1y, /*b2y,*/ ref(new_interv_z[9].begin), ref(new_interv_z[9].end));
-
-	t1.join();
-	t2.join();
-	t3.join();
-	t4.join();
-	t5.join();
-	t6.join();
-	t7.join();
-	t8.join();
-	t9.join();
-	t10.join();
 
 	//Calculation1b2z(ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1x, a1y, b1z, /*b2z,*/ ref(new_interv_z[0].begin), ref(new_interv_z[0].end));
 
-	std::thread t11(Calculation1b2z, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1x, a1y, b1z, /*b2z,*/ ref(new_interv_z[0].begin), ref(new_interv_z[0].end));
-	std::thread t12(Calculation1b2z, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1x, a1y, b1z, /*b2z,*/ ref(new_interv_z[1].begin), ref(new_interv_z[1].end));
-	std::thread t13(Calculation1b2z, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1x, a1y, b1z, /*b2z,*/ ref(new_interv_z[2].begin), ref(new_interv_z[2].end));
-	std::thread t14(Calculation1b2z, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1x, a1y, b1z, /*b2z,*/ ref(new_interv_z[3].begin), ref(new_interv_z[3].end));
-	std::thread t15(Calculation1b2z, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1x, a1y, b1z, /*b2z,*/ ref(new_interv_z[4].begin), ref(new_interv_z[4].end));
-	std::thread t16(Calculation1b2z, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1x, a1y, b1z, /*b2z,*/ ref(new_interv_z[5].begin), ref(new_interv_z[5].end));
-	std::thread t17(Calculation1b2z, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1x, a1y, b1z, /*b2z,*/ ref(new_interv_z[6].begin), ref(new_interv_z[6].end));
-	std::thread t18(Calculation1b2z, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1x, a1y, b1z, /*b2z,*/ ref(new_interv_z[7].begin), ref(new_interv_z[7].end));
-	std::thread t19(Calculation1b2z, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1x, a1y, b1z, /*b2z,*/ ref(new_interv_z[8].begin), ref(new_interv_z[8].end));
-	std::thread t20(Calculation1b2z, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1x, a1y, b1z, /*b2z,*/ ref(new_interv_z[9].begin), ref(new_interv_z[9].end));
+	/*std::thread t11(Calculation1b2z, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1x, a1y, b1z, b2z, ref(new_interv_z[0].begin), ref(new_interv_z[0].end));
+	std::thread t12(Calculation1b2z, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1x, a1y, b1z, b2z, ref(new_interv_z[1].begin), ref(new_interv_z[1].end));
+	std::thread t13(Calculation1b2z, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1x, a1y, b1z, b2z, ref(new_interv_z[2].begin), ref(new_interv_z[2].end));
+	std::thread t14(Calculation1b2z, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1x, a1y, b1z, b2z, ref(new_interv_z[3].begin), ref(new_interv_z[3].end));
+	std::thread t15(Calculation1b2z, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1x, a1y, b1z, b2z, ref(new_interv_z[4].begin), ref(new_interv_z[4].end));
+	std::thread t16(Calculation1b2z, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1x, a1y, b1z, b2z, ref(new_interv_z[5].begin), ref(new_interv_z[5].end));
+	std::thread t17(Calculation1b2z, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1x, a1y, b1z, b2z, ref(new_interv_z[6].begin), ref(new_interv_z[6].end));
+	std::thread t18(Calculation1b2z, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1x, a1y, b1z, b2z, ref(new_interv_z[7].begin), ref(new_interv_z[7].end));
+	std::thread t19(Calculation1b2z, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1x, a1y, b1z, b2z, ref(new_interv_z[8].begin), ref(new_interv_z[8].end));
+	std::thread t20(Calculation1b2z, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), e1, a1x, a1y, b1z, b2z, ref(new_interv_z[9].begin), ref(new_interv_z[9].end));*/
 
-	t11.join();
-	t12.join();
-	t13.join();
-	t14.join();
-	t15.join();
-	t16.join();
-	t17.join();
-	t18.join();
-	t19.join();
-	t20.join();
+	//t11.join();
+	//t12.join();
+	//t13.join();
+	//t14.join();
+	//t15.join();
+	//t16.join();
+	//t17.join();
+	//t18.join();
+	//t19.join();
+	//t20.join();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
 }
 
-//void Acoustic(int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double& V0, int& Nz_heat, double& dz_heat, double*** tmpe2, double*** tmpi2, double*** e2, double*** V2, vector<Melting> & Melt_metal, Metal mt, Parametrs & param, Splayn & spl_C_e_on_T, int& begin, int& end/*, double*** Pacoustic, double*** PTe, double*** PTi,*/, Splayn spl_Te, Splayn spl_Ti, vector<Point3D> points_rupture, double*** Te_acoustic, double*** Ti_acoustic)
-//{
-//	double delta = 1.;
-//	//for (int k = begin; k < end; k++)
-//	vector<Point3D>::iterator it;
-//	if (points_rupture.empty())
-//	{
-//		for (int i = begin; i < end; i++)// циклы по узлам акустики
-//		//for (int i = 0; i < Nx; i++)// циклы по узлам акустики
-//		{
-//			for (int j = 0; j < Ny; j++)
-//			{
-//				spl_Te.InterpolateFast(1, tmpe2, i, j);
-//				spl_Ti.InterpolateFast(1, tmpi2, i, j);
-//				for (int k = 1; k < Nz; k++)//l=1
-//				{		// добавить плотность и скорость звука в зависимоси от фазы (тверд, жидк) 
-//					if ((spl_Ti.GetY(k * dz) * param.T00) < (Melt_metal[mt].T_melting - delta))
-//					{
-//						e2[i][j][k] = (1. - V2[i][j][k]) +
-//							(Melt_metal[mt].gi * param.T00 * (Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(k * dz)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) *
-//							(spl_Ti.GetY(k * dz) - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * spl_Te.GetY(k * dz)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * 1e-6)) *
-//							(spl_Te.GetY(k * dz) - 1.);
-//					}
-//
-//					if ((spl_Ti.GetY(k * dz) * param.T00) >= (Melt_metal[mt].T_melting - delta) && (spl_Ti.GetY(k * dz) * param.T00) <= (Melt_metal[mt].T_melting + delta))
-//					{
-//						//Ci[J/cm3 K] = ((Dependence_C_l_on_T(mt, param.T00 * tmpi2[i][j][k]) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * delta)))
-//						// spl_Ti.GetY(k * dz) = tmpi2
-//						e2[i][j][k] = (1. - V2[i][j][k]) +
-//							(Melt_metal[mt].gi * param.T00 * (((Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(k * dz)) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * delta)))) / (pow((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2, 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * V0 * 1e-6)) *
-//							(spl_Ti.GetY(k * dz) - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * spl_Te.GetY(k * dz)) / (100. * 100. * 100.)) / (((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * 1e-6)) *
-//							(spl_Te.GetY(k * dz) - 1.);
-//
-//					}
-//
-//					//if ((spl_Ti.GetY(k * dz) * param.T00) > (Melt_metal[mt].T_melting + delta))
-//					{
-//						/*e2[i][j][k] = (1. - V2[i][j][k]) +
-//							(Melt_metal[mt].gi * param.T00 * (Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(k * dz)) / (100. * 100. * 100.)) / (Melt_metal[mt].DensityLiquid * Melt_metal[mt].DensityLiquid * pow(Melt_metal[mt].u0_Liquid, 2) * V0 * 1e-6)) *
-//							(spl_Ti.GetY(k * dz) - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * spl_Te.GetY(k * dz)) / (100. * 100. * 100.)) / (Melt_metal[mt].DensityLiquid * pow(Melt_metal[mt].u0_Liquid, 2) * 1e-6)) *
-//							(spl_Te.GetY(k * dz) - 1.);*/
-//					}
-//				}
-//			}
-//		}
-//	}
-//	else
-//	{
-//		for (int i = begin; i < end; i++)// циклы по узлам акустики
-//		{
-//			for (int j = 0; j < Ny; j++)
-//			{
-//				spl_Te.InterpolateFast(1, tmpe2, i, j);
-//				spl_Ti.InterpolateFast(1, tmpi2, i, j);
-//				for (int k = 1; k < Nz; k++)//l=1
-//				{		// добавить плотность и скорость звука в зависимоси от фазы (тверд, жидк) 
-//					if (begin >= (*points_rupture.begin()).index_x && end <= (*(points_rupture.end()-1)).index_x)
-//					{
-//						for (it = points_rupture.begin(); it < points_rupture.end(); it++)// цикл по точкам где произошел разрыв
-//						{
-//							if ((*it).index_x == i && (*it).index_y == j && (*it).index_z == k)
-//							{
-//								e2[i][j][k] = 0.;
-//								V2[i][j][k] = 1.;//????
-//							}
-//							else
-//							{
-//								if ((spl_Ti.GetY(k * dz) * param.T00) < (Melt_metal[mt].T_melting - delta))
-//								{
-//									e2[i][j][k] = (1. - V2[i][j][k]) +
-//										(Melt_metal[mt].gi * param.T00 * (Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(k * dz)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) *
-//										(spl_Ti.GetY(k * dz) - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * spl_Te.GetY(k * dz)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * 1e-6)) *
-//										(spl_Te.GetY(k * dz) - 1.);
-//								}
-//
-//								if ((spl_Ti.GetY(k * dz) * param.T00) >= (Melt_metal[mt].T_melting - delta) && (spl_Ti.GetY(k * dz) * param.T00) <= (Melt_metal[mt].T_melting + delta))
-//								{
-//									//Ci[J/cm3 K] = ((Dependence_C_l_on_T(mt, param.T00 * tmpi2[i][j][k]) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * delta)))
-//									// spl_Ti.GetY(k * dz) = tmpi2
-//									e2[i][j][k] = (1. - V2[i][j][k]) +
-//										(Melt_metal[mt].gi * param.T00 * (((Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(k * dz)) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * delta)))) / (pow((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2, 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * V0 * 1e-6)) *
-//										(spl_Ti.GetY(k * dz) - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * spl_Te.GetY(k * dz)) / (100. * 100. * 100.)) / (((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * 1e-6)) *
-//										(spl_Te.GetY(k * dz) - 1.);
-//								}
-//
-//								//if ((spl_Ti.GetY(k * dz) * param.T00) > (Melt_metal[mt].T_melting + delta))
-//								{
-//									/*e2[i][j][k] = (1. - V2[i][j][k]) +
-//										(Melt_metal[mt].gi * param.T00 * (Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(k * dz)) / (100. * 100. * 100.)) / (Melt_metal[mt].DensityLiquid * Melt_metal[mt].DensityLiquid * pow(Melt_metal[mt].u0_Liquid, 2) * V0 * 1e-6)) *
-//										(spl_Ti.GetY(k * dz) - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * spl_Te.GetY(k * dz)) / (100. * 100. * 100.)) / (Melt_metal[mt].DensityLiquid * pow(Melt_metal[mt].u0_Liquid, 2) * 1e-6)) *
-//										(spl_Te.GetY(k * dz) - 1.);*/
-//								}
-//							}
-//						}
-//					}
-//					else
-//					{
-//						if ((spl_Ti.GetY(k * dz) * param.T00) < (Melt_metal[mt].T_melting - delta))
-//						{
-//							e2[i][j][k] = (1. - V2[i][j][k]) +
-//								(Melt_metal[mt].gi * param.T00 * (Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(k * dz)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) *
-//								(spl_Ti.GetY(k * dz) - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * spl_Te.GetY(k * dz)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * 1e-6)) *
-//								(spl_Te.GetY(k * dz) - 1.);
-//						}
-//
-//						if ((spl_Ti.GetY(k * dz) * param.T00) >= (Melt_metal[mt].T_melting - delta) && (spl_Ti.GetY(k * dz) * param.T00) <= (Melt_metal[mt].T_melting + delta))
-//						{
-//							//Ci[J/cm3 K] = ((Dependence_C_l_on_T(mt, param.T00 * tmpi2[i][j][k]) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * delta)))
-//							// spl_Ti.GetY(k * dz) = tmpi2
-//							e2[i][j][k] = (1. - V2[i][j][k]) +
-//								(Melt_metal[mt].gi * param.T00 * (((Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(k * dz)) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * delta)))) / (pow((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2, 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * V0 * 1e-6)) *
-//								(spl_Ti.GetY(k * dz) - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * spl_Te.GetY(k * dz)) / (100. * 100. * 100.)) / (((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * 1e-6)) *
-//								(spl_Te.GetY(k * dz) - 1.);
-//
-//						}
-//					}
-//				}
-//			}
-//		}
-//	}
-//}
-
-void Acoustic(int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double& V0, int& Nz_heat, double& dz_heat, double*** tmpe2, double*** tmpi2, double*** e2, double*** V2, vector<Melting>& Melt_metal, Metal mt, Parametrs& param, Splayn& spl_C_e_on_T, int& begin, int& end/*, double*** Pacoustic, double*** PTe, double*** PTi,*//*, Splayn spl_Te, Splayn spl_Ti*/, vector<Point3D> points_rupture, double*** Te_acoustic, double*** Ti_acoustic, Splayn spl_C_l_on_T)
+void Calculation1(double*** a1x, double*** a2x, double*** b1x, double*** b2x, double*** a1z, double*** b1y, double*** b2y, double*** b1z, double*** b2z, double*** a1y, double*** e1, double& dx, double& dy, double& dz, double& dt, double& CC0, int& Nx, int& Ny, int& Nz, vector<Interval>& new_interv_z)
 {
-	double delta = 1.;
-	int count_points = 0;
-	//for (int k = begin; k < end; k++)
-	// если есть изменения в акустике не забывать менять там где отрисовка
-	vector<Point3D>::iterator it;
-	it = points_rupture.begin();
-	if (points_rupture.empty())
-	{
-		//for (int i = begin; i < end; i++)// циклы по узлам акустики
-		//for (int i = 0; i < Nx; i++)// циклы по узлам акустики
-		for (int k = begin; k < end; k++)
+	// Calculation 1
+	// solving the equation of motion
+
+	for (int j = 0; j < Ny; j++)//????????????????????????????????????????????????????????????????????????
+	{// Или тут рассчитываются только внутренние узлы???????????????????????????????????И почему тут часть кода рабоатет???????????
+		for (int l = 0; l < Nz; l++)
 		{
-			for (int j = 0; j < Ny; j++)
+			if ((j - 1) < 0 || (j + 1) > (Ny - 1) || (l - 1) < 0 || (l + 1) > (Nz - 1))
 			{
-				//for (int k = 1; k < Nz; k++)//l=1
-				for (int i = 0; i < Nx; i++)
-				{		// добавить плотность и скорость звука в зависимоси от фазы (тверд, жидк) 
-					if ((Ti_acoustic[i][j][k] * param.T00) < (Melt_metal[mt].T_melting - delta))
-					{
-						if ((Ti_acoustic[i][j][k] * param.T00) >= 1336.)
-						{
-							e2[i][j][k] = (1. - V2[i][j][k]) +
-								(Melt_metal[mt].gi * param.T00 * spl_C_l_on_T.GetY(param.T00 * Ti_acoustic[i][j][k]) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) *
-								(Ti_acoustic[i][j][k] - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * Te_acoustic[i][j][k]) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * 1e-6)) *
-								(Te_acoustic[i][j][k] - 1.);
-						}
-						else
-						{
-							e2[i][j][k] = (1. - V2[i][j][k]) +
-								(Melt_metal[mt].gi * param.T00 * (Dependence_C_l_on_T(mt, param.T00 * Ti_acoustic[i][j][k]) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) *
-								(Ti_acoustic[i][j][k] - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * Te_acoustic[i][j][k]) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * 1e-6)) *
-								(Te_acoustic[i][j][k] - 1.);
-						}
-					}
+				//cout << j << "  " << l << endl;
+				//b2x[0][j][l] = b1x[0][j][l] + dt*CC0*(e1[1][j][l] - e1[0][j][l])*(-(tmp - a1y[0][j][l])*(tmp - a1z[0][j][l]) + (tmp - a1y[0][j][l])*(tmp - a1z[0][j][l])) / (dx*dy*dz);
+				//b2x[0][j][l] = b2x[0][j][l] + dt*CC0*(e1[0][j][l] - tmp)*((a1y[1][j][l] - a1y[0][j][l])*(tmp - a1z[0][j][l]) - (tmp - a1y[0][j][l])*(tmp - a1z[0][j][l])) / (dx*dy*dz);
+				//b2x[0][j][l] = b2x[0][j][l] + dt*CC0*(e1[0][j][l] - tmp)*((tmp - a1y[0][j][l])*(a1z[1][j][l] - a1z[0][j][l]) - (tmp - a1y[0][j][l])*(tmp - a1z[0][j][l])) / (dx*dy*dz);
+			}
+			else {
+				//cout << j << "  " << l << endl;
+				b2x[0][j][l] = b1x[0][j][l] + dt * CC0 * (e1[1][j][l] - e1[0][j][l]) * (-(a1y[0][j + 1][l] - a1y[0][j][l]) * (a1z[0][j][l + 1] - a1z[0][j][l]) + (a1y[0][j][l + 1] - a1y[0][j][l]) * (a1z[0][j + 1][l] - a1z[0][j][l])) / (dx * dy * dz);
+				b2x[0][j][l] = b2x[0][j][l] + dt * CC0 * (e1[0][j][l] - e1[0][j - 1][l]) * ((a1y[1][j][l] - a1y[0][j][l]) * (a1z[0][j][l + 1] - a1z[0][j][l]) - (a1y[0][j][l + 1] - a1y[0][j][l]) * (a1z[0][j][l + 1] - a1z[0][j][l])) / (dx * dy * dz);
+				b2x[0][j][l] = b2x[0][j][l] + dt * CC0 * (e1[0][j][l] - e1[0][j][l - 1]) * ((a1y[0][j + 1][l] - a1y[0][j][l]) * (a1z[1][j][l] - a1z[0][j][l]) - (a1y[0][j + 1][l] - a1y[0][j][l]) * (a1z[0][j + 1][l] - a1z[0][j][l])) / (dx * dy * dz);
 
-					if ((Ti_acoustic[i][j][k] * param.T00) >= (Melt_metal[mt].T_melting - delta) && (Ti_acoustic[i][j][k] * param.T00) <= (Melt_metal[mt].T_melting + delta))
-					{
-						//Ci[J/cm3 K] = ((Dependence_C_l_on_T(mt, param.T00 * tmpi2[i][j][k]) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * delta)))
-						// spl_Ti.GetY(k * dz) = tmpi2
-						
-						e2[i][j][k] = (1. - V2[i][j][k]) +
-							(Melt_metal[mt].gi * param.T00 * (((/*Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(k * dz)) / (100. * 100. * 100.) +*/ spl_C_l_on_T.GetY(param.T00 * Ti_acoustic[i][j][k])  ))) / (pow((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2, 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * V0 * 1e-6)) *
-							(Ti_acoustic[i][j][k] - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * Te_acoustic[i][j][k]) / (100. * 100. * 100.)) / (((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * 1e-6)) *
-							(Te_acoustic[i][j][k] - 1.);
-					}
+			}
+		}
+	}
 
-					if ((Ti_acoustic[i][j][k] * param.T00) > (Melt_metal[mt].T_melting + delta))
-					{
-						e2[i][j][k] = (1. - V2[i][j][k]) +
-							(Melt_metal[mt].gi * param.T00 * ((Dependence_C_l_on_T(mt, param.T00 * Ti_acoustic[i][j][k]) / (100. * 100. * 100.))) / (Melt_metal[mt].DensityLiquid * Melt_metal[mt].DensityLiquid * pow(Melt_metal[mt].u0_Liquid, 2) * V0 * 1e-6)) *
-							(Ti_acoustic[i][j][k] - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * Te_acoustic[i][j][k]) / (100. * 100. * 100.)) / (Melt_metal[mt].DensityLiquid * pow(Melt_metal[mt].u0_Liquid, 2) * 1e-6)) *
-							(Te_acoustic[i][j][k] - 1.);
-					}
+	for (int i = 1; i < Nx - 1; i++)
+	{
+		for (int j = 0; j < Ny; j++)
+		{
+			for (int l = 0; l < Nz; l++)
+			{
+				if ((j - 1) < 0 || (j + 1) > (Ny - 1) || (l - 1) < 0 || (l + 1) > (Nz - 1))
+				{
+					//b2x[i][j][l] = b1x[i][j][l] + dt*CC0*(e1[i][j][l] - tmp)*(-(tmp - a1y[i][j][l])*(tmp - a1z[i][j][l]) + (tmp - a1y[i][j][l])*(tmp - a1z[i][j][l])) / (dx*dy*dz);
+					//b2x[i][j][l] = b2x[i][j][l] + dt*CC0*(e1[i][j][l] - tmp)*((tmp - a1y[i][j][l])*(tmp - a1z[i][j][l]) - (tmp - a1y[i][j][l])*(tmp - a1z[i][j][l])) / (dx*dy*dz);
+					//b2x[i][j][l] = b2x[i][j][l] + dt*CC0*(e1[i][j][l] - tmp)*((tmp - a1y[i][j][l])*(tmp - a1z[i][j][l]) - (tmp - a1y[i][j][l])*(tmp - a1z[i][j][l])) / (dx*dy*dz);
+				}
+				else
+				{
+					b2x[i][j][l] = b1x[i][j][l] + dt * CC0 * (e1[i][j][l] - e1[i - 1][j][l]) * (-(a1y[i][j + 1][l] - a1y[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l]) + (a1y[i][j][l + 1] - a1y[i][j][l]) * (a1z[i][j + 1][l] - a1z[i][j][l])) / (dx * dy * dz);
+					b2x[i][j][l] = b2x[i][j][l] + dt * CC0 * (e1[i][j][l] - e1[i][j - 1][l]) * ((a1y[i + 1][j][l] - a1y[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l]) - (a1y[i][j][l + 1] - a1y[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l])) / (dx * dy * dz);
+					b2x[i][j][l] = b2x[i][j][l] + dt * CC0 * (e1[i][j][l] - e1[i][j][l - 1]) * ((a1y[i][j + 1][l] - a1y[i][j][l]) * (a1z[i + 1][j][l] - a1z[i][j][l]) - (a1y[i][j + 1][l] - a1y[i][j][l]) * (a1z[i][j + 1][l] - a1z[i][j][l])) / (dx * dy * dz);
 				}
 			}
 		}
 	}
-	else
+
+	for (int i = 0; i < Nx; i++)
 	{
-		for (int k = begin; k < end; k++)//l=1
-		//for (int k = 1; k < Nz; k++)//l=1
+		for (int j = 0; j < Ny; j++)
 		{
-			for (int j = 0; j < Ny; j++)
+			for (int l = 0; l < Nz; l++)
 			{
-				//for (int k = 1; k < Nz; k++)//l=1
-				for (int i = 0; i < Nx; i++)
-				{		// добавить плотность и скорость звука в зависимоси от фазы (тверд, жидк) 
-					/*cout << "rupture" << endl;*/
-					if (k >= 1 && k < (Nz / 10)) // возможно разрыв произойдет в рамках узлов первого потока?
-					{
-							// !!!!!!
-						if ((*it).index_x == i && (*it).index_y == j && (*it).index_z == k)
-						{
-							count_points++;
-						//	cout << " cout_points =  " << count_points << endl;
-							e2[i][j][k] = 0.;
-							//cout << endl;
-							//cout << "Points rupture" << endl;
-							//cout << (*it).index_x << "   " << (*it).index_y << "   " << (*it).index_z << "   =   " << i << "   " << j << "   " << k << endl;
-							it++;
-							//V2[i][j][k] = 1.;//????
-						}
-						else
-						{
-							if ((Ti_acoustic[i][j][k] * param.T00) >= 1336.)
-							{
-								e2[i][j][k] = (1. - V2[i][j][k]) +
-									(Melt_metal[mt].gi * param.T00 * spl_C_l_on_T.GetY(param.T00 * Ti_acoustic[i][j][k]) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) *
-									(Ti_acoustic[i][j][k] - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * Te_acoustic[i][j][k]) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * 1e-6)) *
-									(Te_acoustic[i][j][k] - 1.);
-							}
-							else
-							{
-								e2[i][j][k] = (1. - V2[i][j][k]) +
-									(Melt_metal[mt].gi * param.T00 * (Dependence_C_l_on_T(mt, param.T00 * Ti_acoustic[i][j][k]) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) *
-									(Ti_acoustic[i][j][k] - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * Te_acoustic[i][j][k]) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * 1e-6)) *
-									(Te_acoustic[i][j][k] - 1.);
-							}
+				if ((i - 1) < 0 || (i + 1) > (Nx - 1) || (j - 1) < 0 || (j + 1) > (Ny - 1) || (l - 1) < 0 || (l + 1) > (Nz - 1))
+				{
+					//b2y[i][j][l] = b1y[i][j][l] + dt*CC0*(e1[i][j][l] - tmp)*((tmp - a1x[i][j][l])*(tmp - a1z[i][j][l]) - (tmp - a1x[i][j][l])*(tmp - a1z[i][j][l])) / (dx*dy*dz);
+					//b2y[i][j][l] = b2y[i][j][l] + dt*CC0*(e1[i][j][l] - tmp)*((tmp - a1x[i][j][l])*(tmp - a1z[i][j][l]) - (tmp - a1x[i][j][l])*(tmp - a1z[i][j][l])) / (dx*dy*dz);
+					//b2y[i][j][l] = b2y[i][j][l] + dt*CC0*(e1[i][j][l] - tmp)*((tmp - a1x[i][j][l])*(tmp - a1z[i][j][l]) - (tmp - a1x[i][j][l])*(tmp - a1z[i][j][l])) / (dx*dy*dz);
+				}
+				else
+				{
+					b2y[i][j][l] = b1y[i][j][l] + dt * CC0 * (e1[i][j][l] - e1[i - 1][j][l]) * ((a1x[i][j + 1][l] - a1x[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l]) - (a1x[i][j][l + 1] - a1x[i][j][l]) * (a1z[i][j + 1][l] - a1z[i][j][l])) / (dx * dy * dz);
+					b2y[i][j][l] = b2y[i][j][l] + dt * CC0 * (e1[i][j][l] - e1[i][j - 1][l]) * ((a1x[i][j][l + 1] - a1x[i][j][l]) * (a1z[i + 1][j][l] - a1z[i][j][l]) - (a1x[i + 1][j][l] - a1x[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l])) / (dx * dy * dz);
+					b2y[i][j][l] = b2y[i][j][l] + dt * CC0 * (e1[i][j][l] - e1[i][j][l - 1]) * ((a1x[i + 1][j][l] - a1x[i][j][l]) * (a1z[i][j + 1][l] - a1z[i][j][l]) - (a1x[i][j + 1][l] - a1x[i][j][l]) * (a1z[i + 1][j][l] - a1z[i][j][l])) / (dx * dy * dz);
+				}
+			}
+		}
+	}
 
-							if ((Ti_acoustic[i][j][k] * param.T00) >= (Melt_metal[mt].T_melting - delta) && (Ti_acoustic[i][j][k] * param.T00) <= (Melt_metal[mt].T_melting + delta))
-							{
-								//Ci[J/cm3 K] = ((Dependence_C_l_on_T(mt, param.T00 * tmpi2[i][j][k]) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * delta)))
-								// spl_Ti.GetY(k * dz) = tmpi2
-								e2[i][j][k] = (1. - V2[i][j][k]) +
-									(Melt_metal[mt].gi * param.T00 * (((/*Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(k * dz)) / (100. * 100. * 100.) +*/ spl_C_l_on_T.GetY(param.T00 * Ti_acoustic[i][j][k])))) / (pow((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2, 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * V0 * 1e-6)) *
-									(Ti_acoustic[i][j][k] - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * Te_acoustic[i][j][k]) / (100. * 100. * 100.)) / (((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * 1e-6)) *
-									(Te_acoustic[i][j][k] - 1.);
-							}
-
-							if ((Ti_acoustic[i][j][k] * param.T00) > (Melt_metal[mt].T_melting + delta))
-							{
-								e2[i][j][k] = (1. - V2[i][j][k]) +
-									(Melt_metal[mt].gi * param.T00 * ((Dependence_C_l_on_T(mt, param.T00* Ti_acoustic[i][j][k]) / (100. * 100. * 100.))) / (Melt_metal[mt].DensityLiquid * Melt_metal[mt].DensityLiquid * pow(Melt_metal[mt].u0_Liquid, 2) * V0 * 1e-6)) *
-									(Ti_acoustic[i][j][k] - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * Te_acoustic[i][j][k]) / (100. * 100. * 100.)) / (Melt_metal[mt].DensityLiquid * pow(Melt_metal[mt].u0_Liquid, 2) * 1e-6)) *
-									(Te_acoustic[i][j][k] - 1.);
-							}
-						}
-					}
-					else
-					{
-						if ((Ti_acoustic[i][j][k] * param.T00) >= 1336.)
-						{
-							e2[i][j][k] = (1. - V2[i][j][k]) +
-								(Melt_metal[mt].gi * param.T00 * spl_C_l_on_T.GetY(param.T00 * Ti_acoustic[i][j][k]) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) *
-								(Ti_acoustic[i][j][k] - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * Te_acoustic[i][j][k]) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * 1e-6)) *
-								(Te_acoustic[i][j][k] - 1.);
-						}
-						else
-						{
-							e2[i][j][k] = (1. - V2[i][j][k]) +
-								(Melt_metal[mt].gi * param.T00 * (Dependence_C_l_on_T(mt, param.T00 * Ti_acoustic[i][j][k]) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) *
-								(Ti_acoustic[i][j][k] - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * Te_acoustic[i][j][k]) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * 1e-6)) *
-								(Te_acoustic[i][j][k] - 1.);
-						}
-
-						if ((Ti_acoustic[i][j][k] * param.T00) >= (Melt_metal[mt].T_melting - delta) && (Ti_acoustic[i][j][k] * param.T00) <= (Melt_metal[mt].T_melting + delta))
-						{
-							//Ci[J/cm3 K] = ((Dependence_C_l_on_T(mt, param.T00 * tmpi2[i][j][k]) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * delta)))
-							// spl_Ti.GetY(k * dz) = tmpi2
-							e2[i][j][k] = (1. - V2[i][j][k]) +
-								(Melt_metal[mt].gi * param.T00 * (((/*Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(k * dz)) / (100. * 100. * 100.) +*/ spl_C_l_on_T.GetY(param.T00 * Ti_acoustic[i][j][k])))) / (pow((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2, 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * V0 * 1e-6)) *
-								(Ti_acoustic[i][j][k] - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * Te_acoustic[i][j][k]) / (100. * 100. * 100.)) / (((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * 1e-6)) *
-								(Te_acoustic[i][j][k] - 1.);
-						}
-
-						if ((Ti_acoustic[i][j][k] * param.T00) > (Melt_metal[mt].T_melting + delta))
-						{
-							e2[i][j][k] = (1. - V2[i][j][k]) +
-								(Melt_metal[mt].gi * param.T00 * ((Dependence_C_l_on_T(mt, param.T00* Ti_acoustic[i][j][k]) / (100. * 100. * 100.))) / (Melt_metal[mt].DensityLiquid * Melt_metal[mt].DensityLiquid * pow(Melt_metal[mt].u0_Liquid, 2) * V0 * 1e-6)) *
-								(Ti_acoustic[i][j][k] - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * Te_acoustic[i][j][k]) / (100. * 100. * 100.)) / (Melt_metal[mt].DensityLiquid * pow(Melt_metal[mt].u0_Liquid, 2) * 1e-6)) *
-								(Te_acoustic[i][j][k] - 1.);
-						}
-					}
+	for (int i = 0; i < Nx; i++)
+	{
+		for (int j = 0; j < Ny; j++)
+		{
+			for (int l = 0; l < Nz; l++)
+			{
+				if ((i - 1) < 0 || (i + 1) > (Nx - 1) || (j - 1) < 0 || (j + 1) > (Ny - 1) || (l - 1) < 0 || (l + 1) > (Nz - 1))
+				{
+					//b2z[i][j][l] = b1z[i][j][l] + dt*(e1[i][j][l] - tmp)*((tmp - a1x[i][j][l])*(tmp - a1y[i][j][l]) - (tmp - a1x[i][j][l])*(tmp - a1y[i][j][l])) / (dx*dy*dz);
+					//b2z[i][j][l] = b2z[i][j][l] + dt*(e1[i][j][l] - tmp)*((tmp - a1x[i][j][l])*(tmp - a1y[i][j][l]) - (tmp - a1x[i][j][l])*(tmp - a1y[i][j][l])) / (dx*dy*dz);
+					//b2z[i][j][l] = b2z[i][j][l] + dt*(e1[i][j][l] - tmp)*((tmp - a1x[i][j][l])*(tmp - a1y[i][j][l]) - (tmp - a1x[i][j][l])*(tmp - a1y[i][j][l])) / (dx*dy*dz);
+				}
+				else
+				{
+					b2z[i][j][l] = b1z[i][j][l] + dt * (e1[i][j][l] - e1[i - 1][j][l]) * ((a1x[i][j][l + 1] - a1x[i][j][l]) * (a1y[i][j + 1][l] - a1y[i][j][l]) - (a1x[i][j + 1][l] - a1x[i][j][l]) * (a1y[i][j][l + 1] - a1y[i][j][l])) / (dx * dy * dz);
+					b2z[i][j][l] = b2z[i][j][l] + dt * (e1[i][j][l] - e1[i][j - 1][l]) * ((a1x[i + 1][j][l] - a1x[i][j][l]) * (a1y[i][j][l + 1] - a1y[i][j][l]) - (a1x[i][j][l + 1] - a1x[i][j][l]) * (a1y[i + 1][j][l] - a1y[i][j][l])) / (dx * dy * dz);
+					b2z[i][j][l] = b2z[i][j][l] + dt * (e1[i][j][l] - e1[i][j][l - 1]) * ((a1x[i][j + 1][l] - a1x[i][j][l]) * (a1y[i + 1][j][l] - a1y[i][j][l]) - (a1x[i + 1][j][l] - a1x[i][j][l]) * (a1y[i][j + 1][l] - a1y[i][j][l])) / (dx * dy * dz);
 				}
 			}
 		}
 	}
 }
 
-void a2xyz(int& Nx, int& Ny, int& Nz, double& dt, double& CC0, double*** a1x, double*** a1y, double*** a1z, /*double*** a2x, double*** a2y, double*** a2z,*/ double*** b2x, double*** b2y, double*** b2z, int& begin, int& end)
+
+void a2xyz(int& Nx, int& Ny, int& Nz, double& dt, double& CC0, double*** a1x, double*** a1y, double*** a1z, double*** a2x, double*** a2y, double*** a2z, double*** b2x, double*** b2y, double*** b2z, int& begin, int& end)
 {
 	/*for (int i = 0; i < Nx; i++)*/
 	for (int l = begin; l < end; l++)
-	//for (int l = 0; l < Nz; l++)
+		//for (int l = 0; l < Nz; l++)
 	{
 		for (int j = 0; j < Ny; j++)
 		{
 			for (int i = 0; i < Nx; i++)
-			//for (int l = 0; l < Nz; l++)
+				//for (int l = 0; l < Nz; l++)
 			{
 				//calculation of the change in the Euler coordinates of Lagrangian particles
-				a1x[i][j][l] = a1x[i][j][l] + dt * b2x[i][j][l] / CC0;
-				a1y[i][j][l] = a1y[i][j][l] + dt * b2y[i][j][l] / CC0;
-				a1z[i][j][l] = a1z[i][j][l] + dt * b2z[i][j][l];
+				a2x[i][j][l] = a1x[i][j][l] + dt * b2x[i][j][l] / CC0;
+				a2y[i][j][l] = a1y[i][j][l] + dt * b2y[i][j][l] / CC0;
+				a2z[i][j][l] = a1z[i][j][l] + dt * b2z[i][j][l];
 			}
 		}
 	}
 }
 
-void funV2(int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double*** a1x, double*** a1y, double*** a1z, double*** V2, int& begin, int& end)
+void funV2(int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double*** a1x, double*** a1y, double*** a1z, double*** a2x, double*** a2y, double*** a2z, double*** V2, int& begin, int& end)
 {
 	for (int l = begin; l < end; l++)
-	//for (int i = 1; i < Nx - 1; i++)
+		//for (int i = 1; i < Nx - 1; i++)
 	{
 		for (int j = 1; j < Ny - 1; j++)
 		{
@@ -1538,93 +1376,45 @@ void funV2(int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double
 			for (int i = 1; i < Nx - 1; i++)
 			{
 				// Calculation of the continuity equation
-				V2[i][j][l] = (a1x[i + 1][j][l] - a1x[i][j][l]) * ((a1y[i][j + 1][l] - a1y[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l]) - (a1y[i][j][l + 1] - a1y[i][j][l]) * (a1z[i][j + 1][l] - a1z[i][j][l])) / (dx * dy * dz);
-				V2[i][j][l] = V2[i][j][l] - (a1y[i + 1][j][l] - a1y[i][j][l]) * ((a1x[i][j + 1][l] - a1x[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l]) - (a1x[i][j][l + 1] - a1x[i][j][l]) * (a1z[i][j + 1][l] - a1z[i][j][l])) / (dx * dy * dz);
-				V2[i][j][l] = V2[i][j][l] + (a1z[i + 1][j][l] - a1z[i][j][l]) * ((a1x[i][j + 1][l] - a1x[i][j][l]) * (a1y[i][j][l + 1] - a1y[i][j][l]) - (a1x[i][j][l + 1] - a1x[i][j][l]) * (a1y[i][j + 1][l] - a1y[i][j][l])) / (dx * dy * dz);
+				V2[i][j][l] = (a2x[i + 1][j][l] - a2x[i][j][l]) * ((a2y[i][j + 1][l] - a2y[i][j][l]) * (a2z[i][j][l + 1] - a2z[i][j][l]) - (a2y[i][j][l + 1] - a2y[i][j][l]) * (a2z[i][j + 1][l] - a2z[i][j][l])) / (dx * dy * dz);
+				V2[i][j][l] = V2[i][j][l] - (a2y[i + 1][j][l] - a2y[i][j][l]) * ((a2x[i][j + 1][l] - a2x[i][j][l]) * (a2z[i][j][l + 1] - a2z[i][j][l]) - (a2x[i][j][l + 1] - a2x[i][j][l]) * (a2z[i][j + 1][l] - a2z[i][j][l])) / (dx * dy * dz);
+				V2[i][j][l] = V2[i][j][l] + (a2z[i + 1][j][l] - a2z[i][j][l]) * ((a2x[i][j + 1][l] - a2x[i][j][l]) * (a2y[i][j][l + 1] - a2y[i][j][l]) - (a2x[i][j][l + 1] - a2x[i][j][l]) * (a2y[i][j + 1][l] - a2y[i][j][l])) / (dx * dy * dz);
 			}
 		}
 	}
 }
 
-void fune2(int& Ny, int& Nz, double*** e2, int& begin, int& end)
-{
-	for (int l = begin; l < end; l++)
-	//for (int j = 0; j < Ny; j++)
-	{
-		//for (int l = 0; l < Nz; l++)
-		for (int j = 0; j < Ny; j++)
-		{
-			e2[0][j][l] = 1e-16;
-		}
-	}
-}
-
-void Calculation2(double*** a1x, double*** a1y, double*** a1z, /*double*** a2x, double*** a2y, double*** a2z,*/ double*** b2x, double*** b2y, double*** b2z, double*** V2, double*** e2, double*** tmpe2, double*** tmpi2,/* double*** at1i, double*** at1e,*/ double& dx, double& dy, double& dz, double& dt, double& CC0, int& Nx, int& Ny, int& Nz, double& V0, int& Nz_heat, double dz_heat, vector<Melting> & Melt_metal, Metal mt, Parametrs & param, Splayn & spl_C_e_on_T, /*vector<Interval> & new_interv,*/ vector<Interval>& new_interv_z, Splayn & spl_Te, Splayn & spl_Ti/*, double*** Pacoustic, double*** PTe, double*** PTi*/, vector<Point3D> points_rupture, double*** Te_acoustic, double*** Ti_acoustic, Splayn spl_C_l_on_T)
+void Calculation2(double*** a1x, double*** a1y, double*** a1z, double*** a2x, double*** a2y, double*** a2z, double*** b2x, double*** b2y, double*** b2z, double*** V2, double*** e2, double*** tmpe2, double*** tmpi2, double& dx, double& dy, double& dz, double& dt, double& CC0, int& Nx, int& Ny, int& Nz, double& V0, vector<Melting>& Melt_metal, Metal mt, Parametrs& param, Splayn& spl_C_e_on_T, Splayn& spl_Te, Splayn& spl_Ti, double*** Te_acoustic, double*** Ti_acoustic, vector<Interval>& new_interv_z, Splayn spl_C_l_on_T)
 {// Calculation of 
  // Calculatuion 2
 
-	//a2xyz(ref(Nx), ref(Ny), ref(Nz), ref(dt), ref(CC0), a1x, a1y, a1z, /*a2x, a2y, a2z,*/ b2x, b2y, b2z, ref(new_interv_z[1].begin), ref(new_interv_z[1].end));
+	for (int i = 0; i < Nx; i++)
+	{
+		for (int j = 0; j < Ny; j++)
+		{
+			for (int l = 0; l < Nz; l++)
+			{
+				//calculation of the change in the Euler coordinates of Lagrangian particles
+				a2x[i][j][l] = a1x[i][j][l] + dt * b2x[i][j][l] / CC0;
+				a2y[i][j][l] = a1y[i][j][l] + dt * b2y[i][j][l] / CC0;
+				a2z[i][j][l] = a1z[i][j][l] + dt * b2z[i][j][l];
+			}
+		}
+	}
 
-	Interval tmp1(new_interv_z[0].begin - 1, 0);
-	Interval tmp2(0, new_interv_z[9].end); // + 1
-	std::thread t11(a2xyz, ref(Nx), ref(Ny), ref(Nz), ref(dt), ref(CC0), a1x, a1y, a1z, /*a2x, a2y, a2z,*/ b2x, b2y, b2z, ref(tmp1.begin), ref(new_interv_z[0].end));
-	std::thread t12(a2xyz, ref(Nx), ref(Ny), ref(Nz), ref(dt), ref(CC0), a1x, a1y, a1z, /*a2x, a2y, a2z,*/ b2x, b2y, b2z, ref(new_interv_z[1].begin), ref(new_interv_z[1].end));
-	std::thread t13(a2xyz, ref(Nx), ref(Ny), ref(Nz), ref(dt), ref(CC0), a1x, a1y, a1z,/* a2x, a2y, a2z,*/ b2x, b2y, b2z, ref(new_interv_z[2].begin), ref(new_interv_z[2].end));
-	std::thread t14(a2xyz, ref(Nx), ref(Ny), ref(Nz), ref(dt), ref(CC0), a1x, a1y, a1z, /*a2x, a2y, a2z,*/ b2x, b2y, b2z, ref(new_interv_z[3].begin), ref(new_interv_z[3].end));
-	std::thread t15(a2xyz, ref(Nx), ref(Ny), ref(Nz), ref(dt), ref(CC0), a1x, a1y, a1z,/* a2x, a2y, a2z,*/ b2x, b2y, b2z, ref(new_interv_z[4].begin), ref(new_interv_z[4].end));
-	std::thread t16(a2xyz, ref(Nx), ref(Ny), ref(Nz), ref(dt), ref(CC0), a1x, a1y, a1z,/* a2x, a2y, a2z,*/ b2x, b2y, b2z, ref(new_interv_z[5].begin), ref(new_interv_z[5].end));
-	std::thread t17(a2xyz, ref(Nx), ref(Ny), ref(Nz), ref(dt), ref(CC0), a1x, a1y, a1z,/* a2x, a2y, a2z,*/ b2x, b2y, b2z, ref(new_interv_z[6].begin), ref(new_interv_z[6].end));
-	std::thread t18(a2xyz, ref(Nx), ref(Ny), ref(Nz), ref(dt), ref(CC0), a1x, a1y, a1z, /*a2x, a2y, a2z,*/ b2x, b2y, b2z, ref(new_interv_z[7].begin), ref(new_interv_z[7].end));
-	std::thread t19(a2xyz, ref(Nx), ref(Ny), ref(Nz), ref(dt), ref(CC0), a1x, a1y, a1z, /*a2x, a2y, a2z,*/ b2x, b2y, b2z, ref(new_interv_z[8].begin), ref(new_interv_z[8].end));
-	std::thread t110(a2xyz, ref(Nx), ref(Ny), ref(Nz), ref(dt), ref(CC0), a1x, a1y, a1z, /*a2x, a2y, a2z,*/ b2x, b2y, b2z, ref(new_interv_z[9].begin), ref(tmp2.end));
-
-	t11.join();
-	t12.join();
-	t13.join(); ////////////////////////////////////
-	t14.join();
-	t15.join();
-	t16.join();
-	t17.join(); ////////////////////////////////////
-	t18.join();
-	t19.join();
-	t110.join(); ////////////////////////////////////
-
-	/*for (int i = 1; i < Nx - 1; i++)
+	for (int i = 1; i < Nx - 1; i++)
 	{
 		for (int j = 1; j < Ny - 1; j++)
 		{
 			for (int l = 1; l < Nz - 1; l++)
 			{
-				 Calculation of the continuity equation
-				V2[i][j][l] = (a1x[i + 1][j][l] - a1x[i][j][l]) * ((a1y[i][j + 1][l] - a1y[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l]) - (a1y[i][j][l + 1] - a1y[i][j][l]) * (a1z[i][j + 1][l] - a1z[i][j][l])) / (dx * dy * dz);
-				V2[i][j][l] = V2[i][j][l] - (a1y[i + 1][j][l] - a1y[i][j][l]) * ((a1x[i][j + 1][l] - a1x[i][j][l]) * (a1z[i][j][l + 1] - a1z[i][j][l]) - (a1x[i][j][l + 1] - a1x[i][j][l]) * (a1z[i][j + 1][l] - a1z[i][j][l])) / (dx * dy * dz);
-				V2[i][j][l] = V2[i][j][l] + (a1z[i + 1][j][l] - a1z[i][j][l]) * ((a1x[i][j + 1][l] - a1x[i][j][l]) * (a1y[i][j][l + 1] - a1y[i][j][l]) - (a1x[i][j][l + 1] - a1x[i][j][l]) * (a1y[i][j + 1][l] - a1y[i][j][l])) / (dx * dy * dz);
+				// Calculation of the continuity equation
+				V2[i][j][l] = (a2x[i + 1][j][l] - a2x[i][j][l]) * ((a2y[i][j + 1][l] - a2y[i][j][l]) * (a2z[i][j][l + 1] - a2z[i][j][l]) - (a2y[i][j][l + 1] - a2y[i][j][l]) * (a2z[i][j + 1][l] - a2z[i][j][l])) / (dx * dy * dz);
+				V2[i][j][l] = V2[i][j][l] - (a2y[i + 1][j][l] - a2y[i][j][l]) * ((a2x[i][j + 1][l] - a2x[i][j][l]) * (a2z[i][j][l + 1] - a2z[i][j][l]) - (a2x[i][j][l + 1] - a2x[i][j][l]) * (a2z[i][j + 1][l] - a2z[i][j][l])) / (dx * dy * dz);
+				V2[i][j][l] = V2[i][j][l] + (a2z[i + 1][j][l] - a2z[i][j][l]) * ((a2x[i][j + 1][l] - a2x[i][j][l]) * (a2y[i][j][l + 1] - a2y[i][j][l]) - (a2x[i][j][l + 1] - a2x[i][j][l]) * (a2y[i][j + 1][l] - a2y[i][j][l])) / (dx * dy * dz);
 			}
 		}
-	}*/
-
-	//int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double*** a1x, double*** a1y, double*** a1z, double*** V2, int& begin, int& end)
-	std::thread t112(funV2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz),  a1x, a1y, a1z, V2, ref(new_interv_z[0].begin), ref(new_interv_z[0].end));
-	std::thread t122(funV2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz),  a1x, a1y, a1z, V2, ref(new_interv_z[1].begin), ref(new_interv_z[1].end));
-	std::thread t132(funV2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz),  a1x, a1y, a1z, V2, ref(new_interv_z[2].begin), ref(new_interv_z[2].end));
-	std::thread t142(funV2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz),  a1x, a1y, a1z, V2, ref(new_interv_z[3].begin), ref(new_interv_z[3].end));
-	std::thread t152(funV2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz),  a1x, a1y, a1z, V2, ref(new_interv_z[4].begin), ref(new_interv_z[4].end));
-	std::thread t162(funV2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz),  a1x, a1y, a1z, V2, ref(new_interv_z[5].begin), ref(new_interv_z[5].end));
-	std::thread t172(funV2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz),  a1x, a1y, a1z, V2, ref(new_interv_z[6].begin), ref(new_interv_z[6].end));
-	std::thread t182(funV2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz),  a1x, a1y, a1z, V2, ref(new_interv_z[7].begin), ref(new_interv_z[7].end));
-	std::thread t192(funV2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz),  a1x, a1y, a1z, V2, ref(new_interv_z[8].begin), ref(new_interv_z[8].end));
-	std::thread t1102(funV2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz),  a1x, a1y, a1z, V2, ref(new_interv_z[9].begin), ref(new_interv_z[9].end));
-
-	t112.join();
-	t122.join();
-	t132.join();
-	t142.join();
-	t152.join();
-	t162.join();
-	t172.join();
-	t182.join();
-	t192.join();
-	t1102.join();
+	}
 
 	for (int j = 0; j < Nx; j++)
 	{
@@ -1634,35 +1424,14 @@ void Calculation2(double*** a1x, double*** a1y, double*** a1z, /*double*** a2x, 
 		}
 	}
 
-	std::thread t1121(fune2, ref(Ny), ref(Nz), e2, ref(tmp1.begin), ref(new_interv_z[0].end));
-	std::thread t1122(fune2, ref(Ny), ref(Nz), e2, ref(new_interv_z[1].begin), ref(new_interv_z[1].end));
-	std::thread t1123(fune2, ref(Ny), ref(Nz), e2, ref(new_interv_z[2].begin), ref(new_interv_z[2].end));
-	std::thread t1124(fune2, ref(Ny), ref(Nz), e2, ref(new_interv_z[3].begin), ref(new_interv_z[3].end));
-	std::thread t1125(fune2, ref(Ny), ref(Nz), e2, ref(new_interv_z[4].begin), ref(new_interv_z[4].end));
-	std::thread t1126(fune2, ref(Ny), ref(Nz), e2, ref(new_interv_z[5].begin), ref(new_interv_z[5].end));
-	std::thread t1127(fune2, ref(Ny), ref(Nz), e2, ref(new_interv_z[6].begin), ref(new_interv_z[6].end));
-	std::thread t1128(fune2, ref(Ny), ref(Nz), e2, ref(new_interv_z[7].begin), ref(new_interv_z[7].end));
-	std::thread t1129(fune2, ref(Ny), ref(Nz), e2, ref(new_interv_z[8].begin), ref(new_interv_z[8].end));
-	std::thread t11210(fune2, ref(Ny), ref(Nz), e2, ref(new_interv_z[9].begin), ref(tmp2.end));
-
-	t1121.join();
-	t1122.join();
-	t1123.join();
-	t1124.join();
-	t1125.join();
-	t1126.join(); 
-	t1127.join();
-	t1128.join();
-	t1129.join();
-	t11210.join();
-
-	/*for (int j = 0; j < Ny; j++)
+	for (int j = 0; j < Ny; j++)
 	{
 		for (int l = 0; l < Nz; l++)
 		{
 			e2[0][j][l] = 1e-16;
 		}
-	}*/
+	}
+
 
 	// этот блок циклов необходим для того, чтобы распаралелить по оси z
 	for (int i = 0; i < Nx; i++)
@@ -1679,40 +1448,76 @@ void Calculation2(double*** a1x, double*** a1y, double*** a1z, /*double*** a2x, 
 		}
 	}
 
-	cout << "hello" << endl;
-	clock_t tt = clock();
+	//for (int i = 0; i < Nx; i++) // Nz_heat, dz_heat - не нужны
+	//{
+	//	for (int j = 0; j < Ny; j++)// циклы по узлам акустики
+	//	{
+	//		for (int k = 1; k < Nz; k++)//l=1
+	//		{
+	//			// почему тако вид ур-я состояния???
+	//			//   e2[i,j,l]:=(1-V2[i,j,l])+at1i*(tmpi2[i,j,l])/(V2[i,j,l])+at1e*(tmpe2[i,j,l]);
 
-	//Acoustic(ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(V0), ref(Nz_heat), ref(dz_heat), tmpe2, tmpi2, e2, V2, ref(Melt_metal), mt, ref(param), ref(spl_C_e_on_T), ref(new_interv_z[0].begin), ref(new_interv_z[0].end)/*, Pacoustic, PTe, PTi,*/, spl_Te, spl_Ti, points_rupture, Te_acoustic, Ti_acoustic);
+	//			///e2[i][j][k] = (1 - V2[i][j][k]) + at1i * (tmpi2[i][j][k]) + at1e * (tmpe2[i][j][k]);
 
-	std::thread t1(Acoustic, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(V0), ref(Nz_heat), ref(dz_heat), tmpe2, tmpi2, e2, V2, ref(Melt_metal), mt, ref(param), ref(spl_C_e_on_T), ref(new_interv_z[0].begin), ref(new_interv_z[0].end), /*Pacoustic, PTe, PTi,*/ points_rupture, Te_acoustic, Ti_acoustic, spl_C_l_on_T);
-	std::thread t2(Acoustic, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(V0), ref(Nz_heat), ref(dz_heat), tmpe2, tmpi2, e2, V2, ref(Melt_metal), mt, ref(param), ref(spl_C_e_on_T), ref(new_interv_z[1].begin), ref(new_interv_z[1].end), /*Pacoustic, PTe, PTi,*/ points_rupture, Te_acoustic, Ti_acoustic, spl_C_l_on_T);
-	std::thread t3(Acoustic, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(V0), ref(Nz_heat), ref(dz_heat), tmpe2, tmpi2, e2, V2, ref(Melt_metal), mt, ref(param), ref(spl_C_e_on_T), ref(new_interv_z[2].begin), ref(new_interv_z[2].end), /*Pacoustic, PTe, PTi, */points_rupture, Te_acoustic, Ti_acoustic, spl_C_l_on_T);
-	std::thread t4(Acoustic, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(V0), ref(Nz_heat), ref(dz_heat), tmpe2, tmpi2, e2, V2, ref(Melt_metal), mt, ref(param), ref(spl_C_e_on_T), ref(new_interv_z[3].begin), ref(new_interv_z[3].end), /*Pacoustic, PTe, PTi,*/ points_rupture, Te_acoustic, Ti_acoustic, spl_C_l_on_T);
-	std::thread t5(Acoustic, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(V0), ref(Nz_heat), ref(dz_heat), tmpe2, tmpi2, e2, V2, ref(Melt_metal), mt, ref(param), ref(spl_C_e_on_T), ref(new_interv_z[4].begin), ref(new_interv_z[4].end), /*Pacoustic, PTe, PTi,*/ points_rupture, Te_acoustic, Ti_acoustic, spl_C_l_on_T);
-	std::thread t6(Acoustic, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(V0), ref(Nz_heat), ref(dz_heat), tmpe2, tmpi2, e2, V2, ref(Melt_metal), mt, ref(param), ref(spl_C_e_on_T), ref(new_interv_z[5].begin), ref(new_interv_z[5].end), /*Pacoustic, PTe, PTi,*/ points_rupture, Te_acoustic, Ti_acoustic, spl_C_l_on_T);
-	std::thread t7(Acoustic, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(V0), ref(Nz_heat), ref(dz_heat), tmpe2, tmpi2, e2, V2, ref(Melt_metal), mt, ref(param), ref(spl_C_e_on_T), ref(new_interv_z[6].begin), ref(new_interv_z[6].end), /*Pacoustic, PTe, PTi,*/ points_rupture, Te_acoustic, Ti_acoustic, spl_C_l_on_T);
-	std::thread t8(Acoustic, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(V0), ref(Nz_heat), ref(dz_heat), tmpe2, tmpi2, e2, V2, ref(Melt_metal), mt, ref(param), ref(spl_C_e_on_T), ref(new_interv_z[7].begin), ref(new_interv_z[7].end), /*Pacoustic, PTe, PTi,*/ points_rupture, Te_acoustic, Ti_acoustic, spl_C_l_on_T);
-	std::thread t9(Acoustic, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(V0), ref(Nz_heat), ref(dz_heat), tmpe2, tmpi2, e2, V2, ref(Melt_metal), mt, ref(param), ref(spl_C_e_on_T), ref(new_interv_z[8].begin), ref(new_interv_z[8].end), /*Pacoustic, PTe, PTi,*/ points_rupture, Te_acoustic, Ti_acoustic, spl_C_l_on_T);
-	std::thread t10(Acoustic, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(V0), ref(Nz_heat), ref(dz_heat), tmpe2, tmpi2, e2, V2, ref(Melt_metal), mt, ref(param), ref(spl_C_e_on_T), ref(new_interv_z[9].begin), ref(new_interv_z[9].end), /*Pacoustic, PTe, PTi,*/ points_rupture, Te_acoustic, Ti_acoustic, spl_C_l_on_T);
+	//			e2[i][j][k] = (1. - V2[i][j][k]) +
+	//				(Melt_metal[mt].gi * param.T00 * (Dependence_C_l_on_T(mt, param.T00 * Ti_acoustic[i][j][k]) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) *
+	//				(Ti_acoustic[i][j][k] - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * Te_acoustic[i][j][k]) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * 1e-6)) *
+	//				(Te_acoustic[i][j][k] - 1.);
+	//		}
+	//	}
+	//}
 
-	t1.join();
-	t2.join();
-	t3.join(); ////////////////////////////////////
-	t4.join();
-	t5.join();
-	t6.join();
-	t7.join(); ////////////////////////////////////
-	t8.join();
-	t9.join();
-	t10.join(); ////////////////////////////////////
+	double delta = 1.;
 
-	int iter = 0;
-	cout << "hello" << endl;
-	cout << "It took me %d clicks (%f seconds)." << endl <<
-		(std::clock() - tt) / (double)CLOCKS_PER_SEC << endl;
+	for (int i = 0; i < Nx; i++) // Nz_heat, dz_heat - не нужны
+	{
+		for (int j = 0; j < Ny; j++)// циклы по узлам акустики
+		{
+			for (int k = 1; k < Nz; k++)//l=1
+			{
+				// добавить плотность и скорость звука в зависимоси от фазы (тверд, жидк) 
+				if ((Ti_acoustic[i][j][k] * param.T00) < (Melt_metal[mt].T_melting - delta))
+				{
+					
+						e2[i][j][k] = (1. - V2[i][j][k]) +
+							(Melt_metal[mt].gi * param.T00 * (Dependence_C_l_on_T(mt, param.T00 * Ti_acoustic[i][j][k]) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) *
+							(Ti_acoustic[i][j][k] - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * Te_acoustic[i][j][k]) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * 1e-6)) *
+							(Te_acoustic[i][j][k] - 1.);
+				}
+
+				if ((Ti_acoustic[i][j][k] * param.T00) >= (Melt_metal[mt].T_melting - delta) && (Ti_acoustic[i][j][k] * param.T00) <= (Melt_metal[mt].T_melting + delta))
+				{
+					//Ci[J/cm3 K] = ((Dependence_C_l_on_T(mt, param.T00 * tmpi2[i][j][k]) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * delta)))
+					// spl_C_l_on_T.GetY(param.T00 * Ti_acoustic[i][j][k]) 
+					// spl_Ti.GetY(k * dz) = tmpi2
+
+					/*e2[i][j][k] = (1. - V2[i][j][k]) +
+						(Melt_metal[mt].gi * param.T00 * (((((Dependence_C_l_on_T(mt, param.T00* tmpi2[i][j][k]) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * delta)))))) / (pow((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2, 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * V0 * 1e-6)) *
+						(Ti_acoustic[i][j][k] - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * Te_acoustic[i][j][k]) / (100. * 100. * 100.)) / (((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * 1e-6)) *
+						(Te_acoustic[i][j][k] - 1.);*/
+
+					e2[i][j][k] = (1. - V2[i][j][k]) +
+						(Melt_metal[mt].gi * param.T00 * (((( (spl_C_l_on_T.GetY(param.T00* Ti_acoustic[i][j][k])))))) / (pow((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2, 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * V0 * 1e-6)) *
+						(Ti_acoustic[i][j][k] - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * Te_acoustic[i][j][k]) / (100. * 100. * 100.)) / (((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * 1e-6)) *
+						(Te_acoustic[i][j][k] - 1.);
+				}
+
+				if ((Ti_acoustic[i][j][k] * param.T00) > (Melt_metal[mt].T_melting + delta))
+				{
+					e2[i][j][k] = (1. - V2[i][j][k]) +
+						(Melt_metal[mt].gi * param.T00 * ((Dependence_C_l_on_T(mt, param.T00 * Ti_acoustic[i][j][k]) / (100. * 100. * 100.))) / (Melt_metal[mt].DensityLiquid * Melt_metal[mt].DensityLiquid * pow(Melt_metal[mt].u0_Liquid, 2) * V0 * 1e-6)) *
+						(Ti_acoustic[i][j][k] - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * Te_acoustic[i][j][k]) / (100. * 100. * 100.)) / (Melt_metal[mt].DensityLiquid * pow(Melt_metal[mt].u0_Liquid, 2) * 1e-6)) *
+						(Te_acoustic[i][j][k] - 1.);
+				}
+
+			}
+		}
+	}
+
+
 }
 
-void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double CeCe, double CiCi, double gammagamma, double g_e, double g_i, double u00, double tptp, double P00, double*** V2, double*** a1y, /*double*** a2y,*/ double*** a1z, /*double*** a2z, double*** a2x,*/ double*** a1x, double*** b1x, /*double*** b2x,*/ double*** b1y, /*double*** b2y,*/ double*** b1z, /*double*** b2z,*/ /*double*** e2,*/ double*** e1, /*double*** F,*/ double*** tmpe0, double*** tmpe1, double*** tmpe2, double*** tmpi0, double*** tmpi1, double*** tmpi2, double*** Te_acoustic, double*** Ti_acoustic, int Nx_heat, int Ny_heat, int Nz_heat, int Nx_acoustic, int Ny_acoustic, int Nz_acoustic /*, double dz_acoustic*//*, double*** A1, double*** A1i, double*** B1, double*** CC1, double*** CC2,*/ /*double*** kte, double*** kti, double*** Ce, double*** Ci, double*** gamma,*/ /*double*** copy_tmpe1, double*** copy_tmpi1,*/ /*double*** massive_melting_null, double*** massive_melting_tmp1, double*** massive_melting_tmp2,*/ /*double** fict_masive,*/, string current_namefile, Splayn spl_C_l_on_T)    // davlenie, gorizontal'naja skorost', vertikal'naja skorost', temperatura
+void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double CeCe, double CiCi, double gammagamma, double g_e, double g_i, double u00, double tptp, double P00, double*** V2, double*** a1y, double*** a2y, double*** a1z, double*** a2z, double*** a2x, double*** a1x, double*** b1x, double*** b2x, double*** b1y, double*** b2y, double*** b1z, double*** b2z, double*** e2, double*** e1, double*** tmpe0, double*** tmpe1, double*** tmpe2, double*** tmpi0, double*** tmpi1, double*** tmpi2, int Nx_heat, int  Ny_heat, int  Nz_heat, int  Nx_acoustic, int  Ny_acoustic, int  Nz_acoustic, Splayn spl_C_l_on_T, double*** Te_acoustic, double ***Ti_acoustic, string current_namefile)    // davlenie, gorizontal'naja skorost', vertikal'naja skorost', temperatura
 {
 	// parametrs of laser and area
 
@@ -1722,22 +1527,32 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 	double tp = tptp;// 1e-13; // pulse duration, s
 	cout << " tp, s = " << tp << endl;
 	cout << " tp, fs = " << tp * 1e+15 << endl;
-	double xy0 = 1e-1;//1e-1; // transverse size, cm
-	double z0 = 1e-4;//1e-4;  // longsize, cm
+	double xy0 = 1e-1; // transverse size, cm
+	double z0 = 1e-4;  // longsize, cm
+	cout << " Fluence = " << tp * P0 << endl;
 
-	double T00 = 300.;    // char temperature, K
+	// parametrs of metals
+
+	///double kte = kte_kte;//3.115;  // heat cond electron, W/cmK
+	//double roe = roe_roe;// 4.56e-5; // electron density, g/cm3
+	//double Ce = CeCe;// 1.2e+3;  // electron heat capacity, J/gK
+	//double roi = roiroi;// 19.32;  // ion density, g/cm3
+	//double Ci = CiCi;// 0.132;   // ion heat capacity, J/gK
+	double T00 = 300;    // char temperature, K
 	double u0 = u00;// 3.24e+5; // velocity of sound, cm/s
 	double t0 = 1 / (kabs * u0);  // char time, s
-	cout << " t0 = " << t0 << endl;
-	//t0 = 1e-4;
 	double beta = t0 / tp;  // parameter of pulse
-	double ge = g_e;
+	///double gamma = gammagamma;// 0.25e+11;  //  gamma el-phonon, W/cm3K
+	double ge = g_e; 
 	double gi = g_i;
-	// вставить темп зависимость параметров и прверить а потом вставить в ур-е решетки диффузную часть и протестить
-	// перед этим проверить исход из эксперим даных (интерпол) схожесть параметров сейчас веденных (внимательно смотртеь на размерность) (т.е переводить в одну размерность)
+
 	cout << endl;
 
+	///double A1 = kte * t0 / (Ce * r0 * r0);
 	double A2 = kabs * kabs * r0 * r0;
+	///double B1 = kabs * P0 * t0 * beta / (Ce * T00);
+	///double CC1 = gamma * t0 / (Ce);
+	///double CC2 = gamma * t0 / (Ci);
 	Parametrs param;
 	param.beta = beta;
 	param.kabs = kabs;
@@ -1807,7 +1622,7 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 
 	/////////////////////////////////////////
 
-	double V0 = 1.;
+	double V0 = 1;
 	double CC0 = 1 / (kabs * r0);
 
 	//double p0v = ro0 * 1000 * pow(u0 * 0.01, 2) * 1e-5;//202.8e+3;   // c00*c00*ro0 - normirovka davlenija bar (r0 *u0* u0) (perevod v SI i v bar)
@@ -1821,7 +1636,36 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 	bool melting_split = false; // индикатор того, что (произошел/не произошло) плавление и откол
 	bool melting = false;
 	bool split = false;
-	
+	//system("pause");
+
+	// откуда вычисляются???????
+	//double at1i = gi * T00 * Ci / p0v;// 1.11* 0.132 * 300 * 19.32 / p0v;  // parameter vo vtorom (teplom) slagaemom uravnenija sostojanija  dlja Au
+	//double at1e = ge * T00 * Ce / p0v;//1.5 * 300 * 4.56 * 1.2 * 0.01 / p0v;   // parameter vo vtorom (teplom) slagaemom uravnenija sostojanija  dlja Au
+
+	//int Nx = 150;//100; // chislo uzlov po x // 100
+	//int Ny = 150;// 100; // chislo uzlov po y //100
+	//int Nz = 200;// 100; // chislo uzlov po z // 200
+	//cout << Nx << "   " << Ny << "   " << Nz << endl;
+
+	////parametry v uravnenijah
+
+	//double dxy = xy0 / (r0 * Nx);
+	//double dx = dxy;
+	//double dy = dxy;
+
+	//double dz;
+
+	//if (metall == "Ni")
+	//{
+	//	dz = z0 * kabs / Nz / 10; // для никеля
+	//}
+
+	//if (metall == "Au")
+	//{
+	//	dz = z0 * kabs / Nz / 2; // для никеля
+	//}
+
+
 	cout << Nx_heat << "   " << Ny_heat << "   " << Nz_heat << endl;
 	cout << Nx_acoustic << "   " << Ny_acoustic << "   " << Nz_acoustic << endl;
 
@@ -1835,33 +1679,24 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 	double dz_acoustic = z0 * kabs / Nz_acoustic;
 	cout << dx_heat << "  " << dy_heat << "  " << dz_heat << endl;
 	cout << dx_acoustic << "  " << dy_acoustic << "  " << dz_acoustic << endl;
-	cout << " Razmern shag x y (mkm) heat = " << 1e+4 * r0 * dx_heat << endl;
-	cout << " Razmern shag z (mkm) heat = " << 1e+4 * dz_heat / kabs << endl;
-	cout << " Razmern shag x y (mkm) acoustic = " << 1e+4 * r0 * dx_acoustic << endl;
-	cout << " Razmern shag z (mkm) acoustic = " << 1e+4 * dz_acoustic / kabs;
+	cout << " Razmern shag x y (mkm) heat = " << 1e+4* r0* dx_heat << endl;
+	cout << " Razmern shag z (mkm) heat = " << 1e+4* dz_heat / kabs << endl;
+	cout << " Razmern shag x y (mkm) acoustic = " << 1e+4* r0* dx_acoustic << endl;
+	cout << " Razmern shag z (mkm) acoustic = " << 1e+4* dz_acoustic / kabs;
 	cout << endl << endl;
-	cout << " Razmern shag x y (nm) heat = " << 1e+4 * r0 * dx_heat * 1000 << endl;
-	cout << " Razmern shag z (nm) heat = " << 1e+4 * dz_heat / kabs * 1000 << endl;
-	cout << " Razmern shag x y (nm) acoustic = " << 1e+4 * r0 * dx_acoustic * 1000 << endl;
-	cout << " Razmern shag z (nm) acoustic = " << 1e+4 * dz_acoustic / kabs * 1000;
+	cout << " Razmern shag x y (nm) heat = " << 1e+4* r0* dx_heat * 1000 << endl;
+	cout << " Razmern shag z (nm) heat = " << 1e+4* dz_heat / kabs * 1000 << endl;
+	cout << " Razmern shag x y (nm) acoustic = " << 1e+4* r0* dx_acoustic * 1000 << endl;
+	cout << " Razmern shag z (nm) acoustic = " << 1e+4* dz_acoustic / kabs * 1000;
 	cout << endl;
 
-	cout << " C_e " << endl;
-	cout << (Dependence_C_l_on_T(mt, Melt_metal[mt].T_melting - 1.5) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * 5.0)) << endl;
-	cout << (Melt_metal[mt].gi* param.T00* (((Dependence_C_l_on_T(mt, Melt_metal[mt].T_melting - 1.5) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * 5.0)))) / (pow((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2, 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * V0 * 1e-6)) << endl;
-	cout << (Melt_metal[mt].gi* param.T00* (Dependence_C_l_on_T(mt, Melt_metal[mt].T_melting - 0.9) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) << endl;
-	cout << Dependence_C_l_on_T(mt, Melt_metal[mt].T_melting - 0.9) / (100. * 100. * 100.) << endl;
 
+	//cout << dx << "  " << dy << "  " << dz << endl;
 	//  dz:=0.25;
-	//double dt = 4.05e-4;// 2e-4;
-	double dt = 2e-4;//2e-4;
+	double dt = 2e-4;
 	int n = 1;
 	double tt = 0;
-
-	Splayn Test;
-	//Test.Calculation_Interpolation("Test.txt");
-	//Test.Calculation_InterpolationFast("Test.txt");
-	//system("pause");
+	// 32 переменные double
 
 	Splayn spl_G_e_on_T;// = Calculation_Interpolation("Ge_" + metall + "_new.txt");
 	Splayn spl_C_e_on_T;// = Calculation_Interpolation("Ce_" + metall + "_new.txt");
@@ -1869,23 +1704,10 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 	spl_G_e_on_T.Calculation_Interpolation("Ge_" + metall + "_new.txt");
 	Splayn spl_Te;
 	Splayn spl_Ti;
-	//clock_t ttttr = clock();
-	//for (int i = 0; i < 100; i++)// циклы по узлам акустики
-	//{
-	//	for (int j = 0; j < 100; j++)
-	//	{
-	//		spl_C_e_on_T.Calculation_Interpolation("Test.txt");
-	//		spl_G_e_on_T.Calculation_Interpolation("Test.txt");
-	//	}
-	//}
-	//cout << "It took me %d clicks (%f seconds). Splayn " << endl <<
-	//	(std::clock() - ttttr) / (double)CLOCKS_PER_SEC << endl;
-	//spl_C_e_on_T.OutPut();
-	//system("pause");
 
 	// это для того, чтобы сетку координат один раз задать для интерполяции
 	VecD X;
-	for (int i = 0; i < Nz_heat; i++)
+	for (int i = 0; i < Nz_heat; i++)//dz_heat
 	{
 		X.push_back(i * dz_heat); // если будет неравномерная сетка, то нужно одпраить в методе способ заполнения диагонали
 	}
@@ -1908,9 +1730,6 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 				tmpi0[i][j][k] = 1.0;// 1e-16;
 				tmpi1[i][j][k] = 1.0;// 1e-16;
 				tmpi2[i][j][k] = 1e-16;
-				/*massive_melting_null[i][j][k] = 1e-16;
-				massive_melting_tmp1[i][j][k] = 1e-16;
-				massive_melting_tmp2[i][j][k] = 1e-16;*/
 			}
 		}
 	}
@@ -1922,20 +1741,24 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 			for (int k = 0; k < Nz_acoustic; k++)
 			{
 				e1[i][j][k] = 1e-16;
+				e2[i][j][k] = 1e-16;
 				a1x[i][j][k] = (i - 1) * dx_acoustic;
+				a2x[i][j][k] = 1e-16;
 				a1y[i][j][k] = (j - 1) * dy_acoustic;
+				a2y[i][j][k] = 1e-16;
 				a1z[i][j][k] = (k - 1) * dz_acoustic;
+				a2z[i][j][k] = 1e-16;
 				b1x[i][j][k] = 1e-16;
+				b2x[i][j][k] = 1e-16;
 				b1y[i][j][k] = 1e-16;
+				b2y[i][j][k] = 1e-16;
 				b1z[i][j][k] = 1e-16;
+				b2z[i][j][k] = 1e-16;
 				V2[i][j][k] = V0;
-				/*massive_melting_null[i][j][k] = 1e-16;
-				massive_melting_tmp1[i][j][k] = 1e-16;
-				massive_melting_tmp2[i][j][k] = 1e-16;*/
 			}
 		}
 	}
-
+	
 	//для распаралелл тепловой задачи
 	vector<Interval> new_interv = {
 		Interval{ 1, Nz_heat / 10 },
@@ -1962,95 +1785,28 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 		Interval{ 8 * Nz_acoustic / 10, 9 * Nz_acoustic / 10 },
 		Interval{ 9 * Nz_acoustic / 10,  Nz_acoustic - 1 }
 	};
+	
+	//Calculation00(F, tbeam, tmpe0, tmpe1, tmpi1, Nx, Ny, Nz, dx, dy, dz, dt, A1, A2, B1, CC1, CC2, n, beta);
+	Calculation00(mt, param, spl_C_e_on_T, spl_G_e_on_T, /*double*** F,*/  tbeam, tmpe0, tmpe1, tmpi0, tmpi1, Nx_heat, Ny_heat, Nz_heat, dx_heat, dy_heat, dz_heat, dt, A2, n, beta);
+	Calculation1(a1x, a2x, b1x, b2x, a1z, b1y, b2y, b1z, b2z, a1y, e1, dx_acoustic, dy_acoustic, dz_acoustic, dt, CC0, Nx_acoustic, Ny_acoustic, Nz_acoustic, new_interv_acoustic_z);
+	GRU1(e2, Nx_acoustic, Ny_acoustic);
+	GRU2(b2x, b2y, b2z, Nx_acoustic, Ny_acoustic, Nz_acoustic);
+	Calculation2(a1x, a1y, a1z, a2x, a2y, a2z, b2x, b2y, b2z, V2, e2, tmpe2, tmpi2, dx_acoustic, dy_acoustic, dz_acoustic, dt, CC0, Nx_acoustic, Ny_acoustic, Nz_acoustic,  V0, Melt_metal, mt, param, spl_C_e_on_T, spl_Te, spl_Ti, Te_acoustic, Ti_acoustic, new_interv_acoustic_z, spl_C_l_on_T);
 
-	/*vector<Interval> new_interv_acoustic = {
-		Interval{ 1, Nx_acoustic / 10 },
-		Interval{ Nx_acoustic / 10, 2 * Nx_acoustic / 10 },
-		Interval{ 2 * Nx_acoustic / 10, 3 * Nx_acoustic / 10 },
-		Interval{ 3 * Nx_acoustic / 10, 4 * Nx_acoustic / 10 },
-		Interval{ 4 * Nx_acoustic / 10, 5 * Nx_acoustic / 10 },
-		Interval{ 5 * Nx_acoustic / 10, 6 * Nx_acoustic / 10 },
-		Interval{ 6 * Nx_acoustic / 10, 7 * Nx_acoustic / 10 },
-		Interval{ 7 * Nx_acoustic / 10, 8 * Nx_acoustic / 10 },
-		Interval{ 8 * Nx_acoustic / 10, 9 * Nx_acoustic / 10 },
-		Interval{ 9 * Nx_acoustic / 10,  Nx_acoustic - 1 }
-	};*/
-
-	system("pause");
-	Calculation00(mt, param, spl_C_e_on_T, spl_G_e_on_T, /*F,*/ tbeam, tmpe0, tmpe1, tmpi0, tmpi1, /*fict_masive,*/ Nx_heat, Ny_heat, Nz_heat, dx_heat, dy_heat, dz_heat, dt, A2, /*A1, A1i, A2, B1, CC1, CC2,*//* Ce, kte, kti, gamma, Ci,*/ n, beta);
-	Calculation1(a1x, /*a2x*/ b1x, /*b2x,*/ a1z, b1y,/* b2y,*/ b1z, /*b2z,*/ a1y, e1, dx_acoustic, dy_acoustic, dz_acoustic, dt, CC0, Nx_acoustic, Ny_acoustic, Nz_acoustic, new_interv_acoustic_z);
-	GRU1(e1, Nx_acoustic, Ny_acoustic);//!!!!!e2=e1
-	GRU2(b1x, b1y, b1z, Nx_acoustic, Ny_acoustic, Nz_acoustic);
-							
-	double temp1 = 0;
-	double temp2 = 0;
-	clock_t tttt = clock();
-	//for (int i = 0; i < 100; i++)// циклы по узлам акустики
-	{
-	//	for (int j = 0; j < 100; j++)
-		{
-			//for (int k = 1; k < 10000; k++)//l=1
-			{
-			//	spl_Te.InterpolateFast(1, tmpe1, 5, 5);
-			//	spl_Ti.InterpolateFast(1, tmpi1, 5, 5);
-				//for (int k = 1; k < 10000; k++)//l=1
-				//{
-				//	temp1 = spl_Te.GetY(k * dz_acoustic);
-				//	temp2 = spl_Ti.GetY(k * dz_acoustic);
-				//}
-			}
-		}
-	}
-	cout << "It took me %d clicks (%f seconds). Splayn " << endl <<
-		(std::clock() - tttt) / (double)CLOCKS_PER_SEC << endl;
-
-	//spl_Te.OutPut();
-	//vector<double> v(2);
-	//vector<double>::iterator it1;
-
-	tttt = clock();
-//	for (int i = 0; i < 100; i++)// циклы по узлам акустики
-	{
-		//for (int j = 0; j < 100; j++)
-		{
-			//for (int k = 1; k < 10000; k++)//l=1
-			{
-			//	for (it1 = v.begin(); it1 < v.end(); it1++)// цикл по точкам где произошел разрыв
-				{
-					//temp1 = spl_Te.GetY(k * dz_acoustic); // spl_Te.GetYFast(k* dz_acoustic);
-					//spl_Te.OutPut();
-
-					//temp1 = (1. - V2[i][j][k]) +
-					//	(Melt_metal[mt].gi * param.T00 * (Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(k * dz_acoustic)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) *
-					//	(spl_Ti.GetY(k * dz_acoustic) - 1.) / V2[i][j][k] + (Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * spl_Te.GetY(k * dz_acoustic)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * 1e-6)) *
-					//	(spl_Te.GetY(k * dz_acoustic) - 1.);// = spl_Te.GetY(k * dz_acoustic);
-
-					//cout << " temp1  =  " << temp1 << endl;
-					//cout << temp1 << endl;
-					//temp2 = k * dz_acoustic;// spl_Ti.GetY(k* dz_acoustic);
-				}
-			}
-		}
-	}
-	cout << "It took me %d clicks (%f seconds). Splayn " << endl <<
-		(std::clock() - tttt) / (double)CLOCKS_PER_SEC << endl;
-
-	//system("pause");
 	tt = n * dt * t0 * 1e+15; // vremja v fs
-	double dt_temp = 0.5; // fs 
-	cout << " dt = " << dt_temp / ( t0 * 1e+15) << endl;
-	cout << (dt_temp / (t0 * 1e+15)) * t0* 1e+15 << endl;
 
 	int number_plots = 24; //24
-	int count_of_lines = 10;
+	int count_of_lines = 9;
+	int npxzt = 1;
+	int current_number_line_melting = 1;
 	GnuPlot plt(number_plots); // объект хранит 5 плотиков
 	system("pause");
 	plt.SetParametrs2D(0, 3, 3, "Te,Ti", "x,mkm", "Te,Ti,P");
 	plt.SetParametrs2D(1, 2, 3, "Te,Ti", "time,fs", "Te,Ti (K)");
-	plt.SetParametrsOnPlotColor(2, "Te", "z,mkm", "x,mkm", (1e+4 * dz_heat * Nz_heat / kabs), (1e+4 * r0 * dx_heat * Nx_heat));
-	plt.SetParametrsOnPlotColor(3, "Ti", "z,mkm", "x,mkm", (1e+4 * dz_heat * Nz_heat / kabs), (1e+4 * r0 * dx_heat * Nx_heat));
-	plt.SetParametrsOnPlotColor(4, "P(x,N/2,z)", "z,mkm", "x,mkm", (1e+4 * dz_acoustic * Nz_acoustic / kabs), (1e+4 * r0 * dx_acoustic * Nx_acoustic));
-	plt.SetParametrsOnPlotColor(5, "P(x,y,10)", "y,mkm", "x,mkm", (1e+4 * r0 * dy_acoustic * Ny_acoustic), (1e+4 * r0 * dx_acoustic * Nx_acoustic));
+	plt.SetParametrsOnPlotColor(2, "Te", "z,mkm", "x,mkm", (1e+4* dz_heat* Nz_heat / kabs), (1e+4* r0* dx_heat* Nx_heat));
+	plt.SetParametrsOnPlotColor(3, "Ti", "z,mkm", "x,mkm", (1e+4* dz_heat* Nz_heat / kabs), (1e+4* r0* dx_heat* Nx_heat));
+	plt.SetParametrsOnPlotColor(4, "P(x,N/2,z)", "z,mkm", "x,mkm", (1e+4* dz_acoustic* Nz_acoustic / kabs), (1e+4* r0* dx_acoustic* Nx_acoustic));
+	plt.SetParametrsOnPlotColor(5, "P(x,y,10)", "y,mkm", "x,mkm", (1e+4* r0* dy_acoustic* Ny_acoustic), (1e+4* r0* dx_acoustic* Nx_acoustic));
 
 	//plt.SetParametrsOnPlotColor(29, "Pac(x,N/2,z)", "z,mkm", "x,mkm", (1e+4 * dz_acoustic * Nz_acoustic / kabs), (1e+4 * r0 * dx_acoustic * Nx_acoustic)); // подобие на 4 и 5
 	//plt.SetParametrsOnPlotColor(30, "Pac(x,y,10)", "y,mkm", "x,mkm", (1e+4 * r0 * dy_acoustic * Ny_acoustic), (1e+4 * r0 * dx_acoustic * Nx_acoustic));
@@ -2059,16 +1815,16 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 	//plt.SetParametrsOnPlotColor(33, "Pte(x,N/2,z)", "z,mkm", "x,mkm", (1e+4 * dz_acoustic * Nz_acoustic / kabs), (1e+4 * r0 * dx_acoustic * Nx_acoustic));
 	//plt.SetParametrsOnPlotColor(34, "Pte(x,y,10)", "y,mkm", "x,mkm", (1e+4 * r0 * dy_acoustic * Ny_acoustic), (1e+4 * r0 * dx_acoustic * Nx_acoustic)); // подобие на 4 и 5
 
-	plt.SetParametrsOnPlotColor(6, "Te", "y,mkm", "x,mkm", (1e+4 * r0 * dy_heat * Ny_heat), (1e+4 * r0 * dx_heat * Nx_heat));
-	plt.SetParametrsOnPlotColor(7, "Ti", "y,mkm", "x,mkm", (1e+4 * r0 * dy_heat * Ny_heat), (1e+4 * r0 * dx_heat * Nx_heat));
+	plt.SetParametrsOnPlotColor(6, "Te", "y,mkm", "x,mkm", (1e+4* r0* dy_heat* Ny_heat), (1e+4* r0* dx_heat* Nx_heat));
+	plt.SetParametrsOnPlotColor(7, "Ti", "y,mkm", "x,mkm", (1e+4* r0* dy_heat* Ny_heat), (1e+4* r0* dx_heat* Nx_heat));
 	plt.SetParametrs2D(8, count_of_lines, 3, "P,bar", "x,mkm", "P,bar");
 	plt.SetParametrs2D(9, count_of_lines, 3, "P, bar", "z,mkm", "P, bar");
 	plt.SetParametrs2D(10, 1, 3, "Temperature in central zone", "time,fs", "Ti, K"); // копии 1 и 10 графиков
 	plt.SetParametrs2D(11, 11, 3, "Temperature T(z)", "z,mkm", "Ti, K");
 	plt.SetParametrs2D(12, 11, 3, "Temperature T(x)", "x,mkm", "Ti, K");
 
-	plt.SetParametrsOnPlotColor(13, "Melting zone (xz)", "z,mkm", "x,mkm", (1e+4 * dz_heat * Nz_heat / kabs), (1e+4 * r0 * dx_heat * Nx_heat));
-	plt.SetParametrsOnPlotColor(14, "Melting zone (xy)", "y,mkm", "x,mkm", (1e+4 * r0 * dy_heat * Ny_heat), (1e+4 * r0 * dx_heat * Nx_heat));
+	plt.SetParametrsOnPlotColor(13, "Melting zone (xz)", "z,mkm", "x,mkm", (1e+4* dz_heat* Nz_heat / kabs), (1e+4* r0* dx_heat* Nx_heat));
+	plt.SetParametrsOnPlotColor(14, "Melting zone (xy)", "y,mkm", "x,mkm", (1e+4* r0* dy_heat* Ny_heat), (1e+4* r0* dx_heat* Nx_heat));
 	plt.SetParametrs2D(15, 2, 3, "Te,Ti", "x,mkm", "Te,Ti (K)");
 	plt.SetParametrs2D(16, 2, 3, "Te,Ti", "z,mkm", "Te,Ti (K)");
 
@@ -2103,20 +1859,17 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 
 	// возможо здесь нужно отобразить в начальный момент времени, но это не обзательно
 
-	plt.SetGridOnPlot3D(8, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4 * dx_acoustic * r0, 1e+4 * dy_acoustic * r0, 1e+4 * dz_acoustic / kabs, count_of_lines, fun_on_x);
-	plt.SetGridOnPlot3D(9, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4 * dx_acoustic * r0, 1e+4 * dy_acoustic * r0, 1e+4 * dz_acoustic / kabs, count_of_lines, fun_on_z);
-	plt.SetGridOnPlot3D(11, Nx_heat, Ny_heat, Nz_heat, 1e+4 * dx_heat * r0, 1e+4 * dy_heat * r0, 1e+4 * dz_heat / kabs, 11, fun_on_z);
-	plt.SetGridOnPlot3D(12, Nx_heat, Ny_heat, Nz_heat, 1e+4 * dx_heat * r0, 1e+4 * dy_heat * r0, 1e+4 * dz_heat / kabs, 11, fun_on_x);
-
-	int npxzt = 1;
-	int current_number_line_melting = 1;
+	plt.SetGridOnPlot3D(8, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4* dx_acoustic* r0, 1e+4* dy_acoustic* r0, 1e+4* dz_acoustic / kabs, count_of_lines, fun_on_x);
+	plt.SetGridOnPlot3D(9, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4* dx_acoustic* r0, 1e+4* dy_acoustic* r0, 1e+4* dz_acoustic / kabs, count_of_lines, fun_on_z);
+	plt.SetGridOnPlot3D(11, Nx_heat, Ny_heat, Nz_heat, 1e+4* dx_heat* r0, 1e+4* dy_heat* r0, 1e+4* dz_heat / kabs, 11, fun_on_z);
+	plt.SetGridOnPlot3D(12, Nx_heat, Ny_heat, Nz_heat, 1e+4* dx_heat* r0, 1e+4* dy_heat* r0, 1e+4* dz_heat / kabs, 11, fun_on_x);
 
 	clock_t t;
 	double sum_t = 0;
 	t = clock();
 
-	vector<double***> TeTi = { tmpe2 , tmpi2 };
-	vector<double***> Ti = { tmpi2 };
+	vector<double***> TeTi = { tmpe2 , tmpi2 };//????
+	vector<double***> Ti = { tmpi2 };//????
 	vector<double***> P = { e1 };/////
 	//vector<double***> Pac = { Pacoustic };//?????
 	//vector<double***> PTTi = { PTi };//????
@@ -2127,6 +1880,7 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 	vector<string> TiTfs = { "Ti" };
 	vector<string> Melting_zone = { "Melting_zone" };
 	vector<string> Legenda_melting_tmp;
+	vector<string> Legenda;
 	vector<string> FilesForWritting;  // имена файлов куда запишутся поля темепратур и т.д
 	vector<string> FilesForReading;
 	vector<int> for_close_and_open = { 2, 3, 4, 5, 6, 7, 13, 14, 15, 16, 18, 19, 21/*, 22, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34 */ };
@@ -2142,15 +1896,15 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 	points_rupture.clear();
 	points_rupture.erase(points_rupture.begin(), points_rupture.end());
 
-	string depth2 = current_namefile;//"Depth2.txt"; // I0 = 0.25e+10
+	string depth2 = current_namefile;// current_namefile;//"Depth2.txt"; // I0 = 0.25e+10
 	//string depth23 = "Depth23.txt"; // I0 = 0.275e+10
 	//string depth234 = "Depth234.txt"; // I0 = 0.3e+10
 	//string depth2345 = "Depth2345.txt"; // I0 = 0.225e+10
 	//string depth23456 = "Depth23456.txt"; // I0 = 0.325e+10
 	//string depth234567 = "Depth234567.txt"; // I0 = 0.35e+10
-	ofstream file;
-	ifstream fin(fileoflistnamefiles);
-	ofstream fout_depth(depth);
+	//ofstream file;
+	//ifstream fin(fileoflistnamefiles);
+	//ofstream fout_depth(depth);
 	ofstream fout_depth2(depth2);
 
 	vector<string> Pacteti = { "Pac.txt", "PTi.txt", "PTe.txt", "Pacx.txt", "PTix.txt", "PTex.txt" };
@@ -2175,50 +1929,16 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 
 	do // цикл по времени
 	{
-		tt = n * dt * t0 * 1e+15; // vremja v fs
-		cout << " time, fs = " << tt << endl;
-
-		for (int i = 0; i < Nx_acoustic; i++)// циклы по узлам акустики (определяем, где произошел разрыв металла)
-		{
-			for (int j = 0; j < Ny_acoustic; j++)
-			{
-				for (int k = 0; k < Nz_acoustic; k++)
-				{
-					if ((p0v * (1. - V2[i][j][k])) <= -sigma)
-					{
-						Point3D tmp(i, j, k);
-						points_rupture.push_back(tmp);
-						//fout_point << "(" << i << "," << j << "," << k << ")" << endl;
-					}
-				}
-			}
-		}
-
-		if (points_rupture.empty())
-		{ }
-		else
-		{
-			fout_point.open("Points.txt");
-			My_unique(points_rupture);
-			sort(points_rupture.begin(), points_rupture.end(), comp_z);
-			MySort_Point3D_y(points_rupture);
-			MySort_Point3D_x(points_rupture);
-
-			for (it = points_rupture.begin(); it != points_rupture.end(); it++)
-			{
-				fout_point << "(" << (*it).index_z << "," << (*it).index_y << "," << (*it).index_x << ")" << endl;
-			}
-			fout_point.close();
-		}
+		//Calculation0;
 
 		t = clock();
 
-		Calculation0(mt, param, spl_C_e_on_T, spl_G_e_on_T, /*F,*/ tbeam, tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, A2,/*A1, A1i, A2, B1, CC1, CC2,*/ dx_heat, dy_heat, dz_heat, dt, Nx_heat, Ny_heat, Nz_heat, /*Ce, kte, kti, gamma, Ci,*/ n, beta, /*copy_tmpe1, copy_tmpi1,*/ new_interv, /*fict_masive,*/ Melt_metal, melting, spl_C_l_on_T);
-		Calculation1(a1x, /*a2x,*/ b1x,/* b2x,*/ a1z, b1y, /*b2y,*/ b1z,/* b2z,*/ a1y, e1, dx_acoustic, dy_acoustic, dz_acoustic, dt, CC0, Nx_acoustic, Ny_acoustic, Nz_acoustic, new_interv_acoustic_z);
-		GRU1(e1, Nx_acoustic, Ny_acoustic);
-		GRU2(b1x, b1y, b1z, Nx_acoustic, Ny_acoustic, Nz_acoustic);
-		Calculation2(a1x, a1y, a1z,/* a2x, a2y, a2z,*/ b1x, b1y, b1z, V2, e1, tmpe2, tmpi2, /*at1i, at1e,*/ dx_acoustic, dy_acoustic, dz_acoustic, dt, CC0, Nx_acoustic, Ny_acoustic, Nz_acoustic, V0, Nz_heat, dz_heat, Melt_metal, mt, param, spl_C_e_on_T, /*new_interv_acoustic,*/ new_interv_acoustic_z, spl_Te, spl_Ti/*, Pacoustic, PTe, PTi*/, points_rupture, Te_acoustic, Ti_acoustic, spl_C_l_on_T);
-		// b2x,b2y,b2z					
+		Calculation0(mt, param, spl_C_e_on_T, spl_G_e_on_T, /*double*** F,*/  tbeam, tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, A2, dx_heat, dy_heat, dz_heat, dt, Nx_heat, Ny_heat, Nz_heat, n, beta, new_interv, Melt_metal, melting, spl_C_l_on_T);
+		Calculation1(a1x, a2x, b1x, b2x, a1z, b1y, b2y, b1z, b2z, a1y, e1, dx_acoustic, dy_acoustic, dz_acoustic, dt, CC0, Nx_acoustic, Ny_acoustic, Nz_acoustic, new_interv_acoustic_z);
+		GRU1(e2, Nx_acoustic, Ny_acoustic);
+		GRU2(b2x, b2y, b2z, Nx_acoustic, Ny_acoustic, Nz_acoustic);
+		Calculation2(a1x, a1y, a1z, a2x, a2y, a2z, b2x, b2y, b2z, V2, e2, tmpe2, tmpi2, dx_acoustic, dy_acoustic, dz_acoustic, dt, CC0, Nx_acoustic, Ny_acoustic, Nz_acoustic, V0, Melt_metal, mt, param, spl_C_e_on_T, spl_Te, spl_Ti, Te_acoustic, Ti_acoustic, new_interv_acoustic_z, spl_C_l_on_T);
+
 		cout << "It took me %d clicks (%f seconds)." << endl <<
 			(std::clock() - t) / (double)CLOCKS_PER_SEC << endl;
 		sum_t += (std::clock() - t) / (double)CLOCKS_PER_SEC;
@@ -2226,6 +1946,10 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 		cout << endl;
 
 		double level_depth = 0.;
+
+		tt = n * dt * t0 * 1e+15; // vremja v fs
+		cout << " time, fs = " << tt << endl;
+
 
 		if ((tmpi1[Nx_heat / 2][Ny_heat / 2][1] * param.T00) >= (Melt_metal[mt].T_melting + 1.)) // 2-й вариант определения макс глубины расплава
 		{
@@ -2312,9 +2036,12 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 			}
 		}
 
+
 		//!!!!!!!!!!
-		if (int(ceil(tt)) == 500 || int(trunc(tt)) == 500 || int(ceil(tt)) == 2500 || int(trunc(tt)) == 2500 || (int(ceil(tt)) % 50 == 0) || (int(trunc(tt)) % 50 == 0) 
-			|| (int(ceil(tt)) == 70) || (int(trunc(tt)) == 70))
+		if ((int)tt == 500 || (int)tt == 1000 || (int)tt == 2000 || (int)tt == 3000 || (int)tt == 4000 || (int)tt == 5000 || (int)tt == 6000 || (int)tt == 7000 || (int)tt == 8000 || (int)tt == 9000
+			|| (int)tt == 10000 || (int)tt == 11000 || (int)tt == 12000 || (int)tt == 13000 || (int)tt == 14000 || (int)tt == 15000 || (int)tt == 16000 || (int)tt == 17000 || (int)tt == 18000 || (int)tt == 19000 || (int)tt == 20000)
+		//if (int(ceil(tt)) == 500 || int(trunc(tt)) == 500 || int(ceil(tt)) % 1000 == 0 || int(trunc(tt)) % 1000 == 0)
+			//|| (int(ceil(tt)) % 50 == 0) || (int(trunc(tt)) % 50 == 0)|| (int(ceil(tt)) == 70) || (int(trunc(tt)) == 70))
 		{//!!!!!!!!!!!!!!!!!!!!!!!!!!	tp * 1e+15
 			//plt.Close_and_open_files_for_replot(for_close_and_open);
 			namefile.clear();
@@ -2350,8 +2077,13 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 */
 			plt.SetDataOnPlotColor3D(6, Nx_heat, Ny_heat, Nz_heat, 1e+4 * dx_heat * r0, 1e+4 * dy_heat * r0, 1e+4 * dz_heat / kabs, tmpe2, T00, 1, xy);
 			plt.SetDataOnPlotColor3D(7, Nx_heat, Ny_heat, Nz_heat, 1e+4 * dx_heat * r0, 1e+4 * dy_heat * r0, 1e+4 * dz_heat / kabs, tmpi2, T00, 1, xy);
-			plt.SetDataOnPlot3D(8, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4 * dx_acoustic * r0, 1e+4 * dy_acoustic * r0, 1e+4 * dz_acoustic / kabs, e1, p0v, NULL, Ny_acoustic / 2, 10, count_of_lines, npxzt, NULL, empty, fun_on_x);
-			plt.SetDataOnPlot3D(9, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4 * dx_acoustic * r0, 1e+4 * dy_acoustic * r0, 1e+4 * dz_acoustic / kabs, e1, p0v, Nx_acoustic / 2, Ny_acoustic / 2, NULL, count_of_lines, npxzt, NULL, empty, fun_on_z);
+			if (npxzt <= count_of_lines)
+			{
+				plt.SetDataOnPlot3D(8, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4 * dx_acoustic * r0, 1e+4 * dy_acoustic * r0, 1e+4 * dz_acoustic / kabs, e1, p0v, NULL, Ny_acoustic / 2, 10, count_of_lines, npxzt, NULL, empty, fun_on_x);
+				plt.SetDataOnPlot3D(9, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4 * dx_acoustic * r0, 1e+4 * dy_acoustic * r0, 1e+4 * dz_acoustic / kabs, e1, p0v, Nx_acoustic / 2, Ny_acoustic / 2, NULL, count_of_lines, npxzt, NULL, empty, fun_on_z);
+				npxzt++;
+				Legenda.push_back(ConvertNumToStringdouble(tt) + " fs");
+			}
 			namefile.clear();
 			namefile = "file Te(x, N div 2, z) " + metall + "," + type_beam + ", pulse duration = " + ConvertNumToStringdouble(tp * 1e+15) + "fs, moment time = " + ConvertNumToStringdouble(tt) + "fs";
 			plt.ShowDataOnPlotColor(2, namefile, true);
@@ -2413,7 +2145,6 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 			plt.ShowDataOnPlotColor(7, namefile, true);
 			Sleep(1000);
 
-			npxzt++;
 			namefile.clear();
 
 			plt.SetGridOnPlot3D(15, Nx_heat, Ny_heat, Nz_heat, 1e+4 * dx_heat * r0, 1e+4 * dy_heat * r0, 1e+4 * dz_heat / kabs, 2, fun_on_x);
@@ -2442,12 +2173,7 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 			/*spl_Te.Calculation_InterpolationFast(tmpe2, Nz_heat, dz_heat, Nx_acoustic / 2, Ny_acoustic / 2);
 			spl_Ti.Calculation_InterpolationFast(tmpi2, Nz_heat, dz_heat, Nx_acoustic / 2, Ny_acoustic / 2);*/
 
-			fout_Pac.open(Pacteti[0]);
-			fout_PTi.open(Pacteti[1]);
-			fout_PTe.open(Pacteti[2]);
-			fout_Pacx.open(Pacteti[3]);
-			fout_PTix.open(Pacteti[4]);
-			fout_PTex.open(Pacteti[5]);
+			
 			// ЗАПИСЬ ОТДЕЛЬНЫХ СЛАГАЕМЫХ УРАВНЕНИЯ СОСТОЯНИЯ МИ-ГРЮНАЙЗЕНА 
 			spl_Te.InterpolateFast(1, tmpe2, Nx_acoustic / 2, Ny_acoustic / 2);
 			spl_Ti.InterpolateFast(1, tmpi2, Nx_acoustic / 2, Ny_acoustic / 2);
@@ -2485,180 +2211,203 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 				{
 					cout << (*it).index_x << "   " << (*it).index_y << "   " << (*it).index_z << endl;
 				}
-			
+
 				cout << endl;
 			}
 
 			for (int k = 0; k < Nz_acoustic; k++)// цикл по z
-			{ 
-				if (points_rupture.empty())
+			{
+				//if (points_rupture.empty())
 				{
 					fout_Pac << 1e+4 * dz_acoustic * k / kabs << "   " << p0v * (1. - V2[Nx_acoustic / 2][Ny_acoustic / 2][k]) << endl;
 
 					if ((spl_Ti.GetY(k * dz_acoustic) * param.T00) < (Melt_metal[mt].T_melting - 1.))
 					{
-						if ((spl_Ti.GetY(k * dz_acoustic) * param.T00) >= 1336.)
+						/*if ((spl_Ti.GetY(k * dz_acoustic) * param.T00) >= 1336.)
 						{
-							fout_PTi << 1e+4* dz_acoustic* k / kabs << "   " << p0v * ((Melt_metal[mt].gi* param.T00* ( spl_C_l_on_T.GetY(param.T00* spl_Ti.GetY(k* dz_acoustic)) ) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6))*
-								(spl_Ti.GetY(k* dz_acoustic) - 1.) / V2[Nx_acoustic / 2][Ny_acoustic / 2][k]) << endl;
+							fout_PTi << 1e+4 * dz_acoustic * k / kabs << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * (spl_C_l_on_T.GetY(param.T00 * spl_Ti.GetY(k * dz_acoustic))) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) *
+								(spl_Ti.GetY(k * dz_acoustic) - 1.) / V2[Nx_acoustic / 2][Ny_acoustic / 2][k]) << endl;
 						}
-						else
-						{
-							fout_PTi << 1e+4* dz_acoustic* k / kabs << "   " << p0v * ((Melt_metal[mt].gi* param.T00* (Dependence_C_l_on_T(mt, param.T00* spl_Ti.GetY(k* dz_acoustic)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6))*
-								(spl_Ti.GetY(k* dz_acoustic) - 1.) / V2[Nx_acoustic / 2][Ny_acoustic / 2][k]) << endl;
-						}
+						else*/
+						//{
+							fout_PTi << 1e+4 * dz_acoustic * k / kabs << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * (Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(k * dz_acoustic)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) *
+								(spl_Ti.GetY(k * dz_acoustic) - 1.) / V2[Nx_acoustic / 2][Ny_acoustic / 2][k]) << endl;
+						//}
 
-						fout_PTe << 1e+4* dz_acoustic* k / kabs << "   " << p0v * ((Melt_metal[mt].ge* param.T00* (spl_C_e_on_T.GetY(param.T00* spl_Te.GetY(k* dz_acoustic)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * 1e-6))*
-							(spl_Te.GetY(k* dz_acoustic) - 1.)) << endl;
+						fout_PTe << 1e+4 * dz_acoustic * k / kabs << "   " << p0v * ((Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * spl_Te.GetY(k * dz_acoustic)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * 1e-6)) *
+							(spl_Te.GetY(k * dz_acoustic) - 1.)) << endl;
 					}
 
 					if ((spl_Ti.GetY(k * dz_acoustic) * param.T00) >= (Melt_metal[mt].T_melting - 1.) && (spl_Ti.GetY(k * dz_acoustic) * param.T00) <= (Melt_metal[mt].T_melting + 1.))
 					{
-						if ((spl_Ti.GetY(k * dz_acoustic) * param.T00) >= 1336.)
-						{
-							fout_PTi << 1e+4* dz_acoustic* k / kabs << "   " << p0v * ((Melt_metal[mt].gi* param.T00* ((( /*Dependence_C_l_on_T(mt, param.T00* spl_Ti.GetY(k* dz_acoustic)) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * 1.0)*/  spl_C_l_on_T.GetY(param.T00* spl_Ti.GetY(k* dz_acoustic)) ))) / (pow((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2, 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * V0 * 1e-6)) *
+						//if ((spl_Ti.GetY(k * dz_acoustic) * param.T00) >= 1336.)
+						//{
+						// новый способ плавления
+							fout_PTi << 1e+4 * dz_acoustic * k / kabs << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * ((( /*Dependence_C_l_on_T(mt, param.T00* spl_Ti.GetY(k* dz_acoustic)) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * 1.0)*/  spl_C_l_on_T.GetY(param.T00 * spl_Ti.GetY(k * dz_acoustic))))) / (pow((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2, 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * V0 * 1e-6)) *
 								(spl_Ti.GetY(k * dz_acoustic) - 1.) / V2[Nx_acoustic / 2][Ny_acoustic / 2][k]) << endl;
 
+						// старый способ плавления
 							/*fout_PTi << 1e+4 * dz_acoustic * k / kabs << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * (((Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(k * dz_acoustic)) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * 1.0)))) / (pow((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2, 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * V0 * 1e-6)) *
 								(spl_Ti.GetY(k * dz_acoustic) - 1.) / V2[Nx_acoustic / 2][Ny_acoustic / 2][k]) << endl;*/
-						}
+						//}
 
 						fout_PTe << 1e+4 * dz_acoustic * k / kabs << "   " << p0v * ((Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * spl_Te.GetY(k * dz_acoustic)) / (100. * 100. * 100.)) / (((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * 1e-6)) *
 							(spl_Te.GetY(k * dz_acoustic) - 1.)) << endl;
 					}
 
 					// ДОБАВИТЬ ИФ СООТВ ЖИДКОЙ ФАЗЕ
-				}
-				else
-				{
-					if ((*it_z).index_x == (Nx_acoustic / 2) && (*it_z).index_y == (Ny_acoustic / 2) && (*it_z).index_z == k)
+
+					if ((spl_Ti.GetY(k * dz_acoustic) * param.T00) > (Melt_metal[mt].T_melting + 1.))
 					{
-						fout_Pac << 1e+4 * dz_acoustic * k / kabs << "   " << 0. << endl;
-						fout_PTi << 1e+4 * dz_acoustic * k / kabs << "   " << 0. << endl;
-						fout_PTe << 1e+4 * dz_acoustic * k / kabs << "   " << 0. << endl;
-						it_z++;
-					}
-					else
-					{
-						fout_Pac << 1e+4 * dz_acoustic * k / kabs << "   " << p0v * (1. - V2[Nx_acoustic / 2][Ny_acoustic / 2][k]) << endl;
+						fout_PTi << 1e+4* dz_acoustic* k / kabs << "   " << p0v * ((Melt_metal[mt].gi* param.T00* (Dependence_C_l_on_T(mt, param.T00* spl_Ti.GetY(k* dz_acoustic)) / (100. * 100. * 100.)) / (Melt_metal[mt].DensityLiquid * Melt_metal[mt].DensityLiquid * pow(Melt_metal[mt].u0_Liquid, 2) * V0 * 1e-6))*
+							(spl_Ti.GetY(k* dz_acoustic) - 1.) / V2[Nx_acoustic / 2][Ny_acoustic / 2][k]) << endl;
+						//}
 
-						if ((spl_Ti.GetY(k * dz_acoustic) * param.T00) < (Melt_metal[mt].T_melting - 1.))
-						{
-							if ((spl_Ti.GetY(k * dz_acoustic) * param.T00) >= 1336.)
-							{
-								fout_PTi << 1e+4 * dz_acoustic * k / kabs << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * (spl_C_l_on_T.GetY(param.T00 * spl_Ti.GetY(k * dz_acoustic))) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) *
-									(spl_Ti.GetY(k * dz_acoustic) - 1.) / V2[Nx_acoustic / 2][Ny_acoustic / 2][k]) << endl;
-							}
-							else
-							{
-								fout_PTi << 1e+4 * dz_acoustic * k / kabs << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * (Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(k * dz_acoustic)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) *
-									(spl_Ti.GetY(k * dz_acoustic) - 1.) / V2[Nx_acoustic / 2][Ny_acoustic / 2][k]) << endl;
-							}
-
-							fout_PTe << 1e+4 * dz_acoustic * k / kabs << "   " << p0v * ((Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * spl_Te.GetY(k * dz_acoustic)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * 1e-6)) *
-								(spl_Te.GetY(k * dz_acoustic) - 1.)) << endl;
-						}
-
-						if ((spl_Ti.GetY(k * dz_acoustic) * param.T00) >= (Melt_metal[mt].T_melting - 1.) && (spl_Ti.GetY(k * dz_acoustic) * param.T00) <= (Melt_metal[mt].T_melting + 1.))
-						{
-							if ((spl_Ti.GetY(k * dz_acoustic) * param.T00) >= 1336.)
-							{
-								fout_PTi << 1e+4 * dz_acoustic * k / kabs << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * ((( /*Dependence_C_l_on_T(mt, param.T00* spl_Ti.GetY(k* dz_acoustic)) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * 1.0)*/  
-									spl_C_l_on_T.GetY(param.T00 * spl_Ti.GetY(k * dz_acoustic))))) / (pow((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2, 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * V0 * 1e-6)) *
-									(spl_Ti.GetY(k * dz_acoustic) - 1.) / V2[Nx_acoustic / 2][Ny_acoustic / 2][k]) << endl;
-
-								/*fout_PTi << 1e+4 * dz_acoustic * k / kabs << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * (((Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(k * dz_acoustic)) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * 1.0)))) / (pow((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2, 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * V0 * 1e-6)) *
-									(spl_Ti.GetY(k * dz_acoustic) - 1.) / V2[Nx_acoustic / 2][Ny_acoustic / 2][k]) << endl;*/
-							}
-
-							fout_PTe << 1e+4 * dz_acoustic * k / kabs << "   " << p0v * ((Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * spl_Te.GetY(k * dz_acoustic)) / (100. * 100. * 100.)) / (((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * 1e-6)) *
-								(spl_Te.GetY(k * dz_acoustic) - 1.)) << endl;
-						}
+						fout_PTe << 1e+4 * dz_acoustic * k / kabs << "   " << p0v * ((Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * spl_Te.GetY(k * dz_acoustic)) / (100. * 100. * 100.)) / (Melt_metal[mt].DensityLiquid * pow(Melt_metal[mt].u0_Liquid, 2) * 1e-6)) *
+							(spl_Te.GetY(k * dz_acoustic) - 1.)) << endl;
 					}
 				}
+				//else
+				//{
+				//	if ((*it_z).index_x == (Nx_acoustic / 2) && (*it_z).index_y == (Ny_acoustic / 2) && (*it_z).index_z == k)
+				//	{
+				//		fout_Pac << 1e+4 * dz_acoustic * k / kabs << "   " << 0. << endl;
+				//		fout_PTi << 1e+4 * dz_acoustic * k / kabs << "   " << 0. << endl;
+				//		fout_PTe << 1e+4 * dz_acoustic * k / kabs << "   " << 0. << endl;
+				//		it_z++;
+				//	}
+				//	else
+				//	{
+				//		fout_Pac << 1e+4 * dz_acoustic * k / kabs << "   " << p0v * (1. - V2[Nx_acoustic / 2][Ny_acoustic / 2][k]) << endl;
+
+				//		if ((spl_Ti.GetY(k * dz_acoustic) * param.T00) < (Melt_metal[mt].T_melting - 1.))
+				//		{
+				//			if ((spl_Ti.GetY(k * dz_acoustic) * param.T00) >= 1336.)
+				//			{
+				//				fout_PTi << 1e+4 * dz_acoustic * k / kabs << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * (spl_C_l_on_T.GetY(param.T00 * spl_Ti.GetY(k * dz_acoustic))) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) *
+				//					(spl_Ti.GetY(k * dz_acoustic) - 1.) / V2[Nx_acoustic / 2][Ny_acoustic / 2][k]) << endl;
+				//			}
+				//			else
+				//			{
+				//				fout_PTi << 1e+4 * dz_acoustic * k / kabs << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * (Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(k * dz_acoustic)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) *
+				//					(spl_Ti.GetY(k * dz_acoustic) - 1.) / V2[Nx_acoustic / 2][Ny_acoustic / 2][k]) << endl;
+				//			}
+
+				//			fout_PTe << 1e+4 * dz_acoustic * k / kabs << "   " << p0v * ((Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * spl_Te.GetY(k * dz_acoustic)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * 1e-6)) *
+				//				(spl_Te.GetY(k * dz_acoustic) - 1.)) << endl;
+				//		}
+
+				//		if ((spl_Ti.GetY(k * dz_acoustic) * param.T00) >= (Melt_metal[mt].T_melting - 1.) && (spl_Ti.GetY(k * dz_acoustic) * param.T00) <= (Melt_metal[mt].T_melting + 1.))
+				//		{
+				//			if ((spl_Ti.GetY(k * dz_acoustic) * param.T00) >= 1336.)
+				//			{
+				//				fout_PTi << 1e+4 * dz_acoustic * k / kabs << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * ((( /*Dependence_C_l_on_T(mt, param.T00* spl_Ti.GetY(k* dz_acoustic)) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * 1.0)*/
+				//					spl_C_l_on_T.GetY(param.T00 * spl_Ti.GetY(k * dz_acoustic))))) / (pow((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2, 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * V0 * 1e-6)) *
+				//					(spl_Ti.GetY(k * dz_acoustic) - 1.) / V2[Nx_acoustic / 2][Ny_acoustic / 2][k]) << endl;
+
+				//				/*fout_PTi << 1e+4 * dz_acoustic * k / kabs << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * (((Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(k * dz_acoustic)) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * 1.0)))) / (pow((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2, 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * V0 * 1e-6)) *
+				//					(spl_Ti.GetY(k * dz_acoustic) - 1.) / V2[Nx_acoustic / 2][Ny_acoustic / 2][k]) << endl;*/
+				//			}
+
+				//			fout_PTe << 1e+4 * dz_acoustic * k / kabs << "   " << p0v * ((Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * spl_Te.GetY(k * dz_acoustic)) / (100. * 100. * 100.)) / (((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * 1e-6)) *
+				//				(spl_Te.GetY(k * dz_acoustic) - 1.)) << endl;
+				//		}
+				//	}
+				//}
 			}
 
 			for (int i = 0; i < Nx_acoustic; i++)// цикл по x
 			{
 				spl_Te.InterpolateFast(1, tmpe2, i, Ny_acoustic / 2);
 				spl_Ti.InterpolateFast(1, tmpi2, i, Ny_acoustic / 2);
-				if (points_rupture.empty())
+				//if (points_rupture.empty())
 				{
 					fout_Pacx << 1e+4 * r0 * dx_acoustic * i << "   " << p0v * (1. - V2[i][Ny_acoustic / 2][1]) << endl;
 
 					if ((spl_Ti.GetY(1 * dz_acoustic) * param.T00) < (Melt_metal[mt].T_melting - 1.))
 					{
-						if ((spl_Ti.GetY(1 * dz_acoustic) * param.T00) >= 1336.)
+						/*if ((spl_Ti.GetY(1 * dz_acoustic) * param.T00) >= 1336.)
 						{
-							fout_PTix << 1e+4* r0* dx_acoustic* i << "   " << p0v * ((Melt_metal[mt].gi* param.T00* (spl_C_l_on_T.GetY(spl_Ti.GetY(1 * dz_acoustic)* param.T00)) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6))*
+							fout_PTix << 1e+4 * r0 * dx_acoustic * i << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * (spl_C_l_on_T.GetY(spl_Ti.GetY(1 * dz_acoustic) * param.T00)) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) *
 								(spl_Ti.GetY(1 * dz_acoustic) - 1.) / V2[i][Ny_acoustic / 2][1]) << endl;
 						}
 						else
-						{
-							fout_PTix << 1e+4* r0* dx_acoustic* i << "   " << p0v * ((Melt_metal[mt].gi* param.T00* (Dependence_C_l_on_T(mt, param.T00* spl_Ti.GetY(1 * dz_acoustic)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6))*
+						{*/
+							fout_PTix << 1e+4 * r0 * dx_acoustic * i << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * (Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(1 * dz_acoustic)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) *
 								(spl_Ti.GetY(1 * dz_acoustic) - 1.) / V2[i][Ny_acoustic / 2][1]) << endl;
-						}
+						//}
 
-						fout_PTex << 1e+4* r0* dx_acoustic* i << "   " << p0v * ((Melt_metal[mt].ge* param.T00* (spl_C_e_on_T.GetY(param.T00* spl_Te.GetY(1 * dz_acoustic)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * 1e-6))*
+						fout_PTex << 1e+4 * r0 * dx_acoustic * i << "   " << p0v * ((Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * spl_Te.GetY(1 * dz_acoustic)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * 1e-6)) *
 							(spl_Te.GetY(1 * dz_acoustic) - 1.)) << endl;
 					}
 
 					if ((spl_Ti.GetY(1 * dz_acoustic) * param.T00) >= (Melt_metal[mt].T_melting - 1.) && (spl_Ti.GetY(1 * dz_acoustic) * param.T00) <= (Melt_metal[mt].T_melting + 1.))
 					{
-						fout_PTix << 1e+4 * r0 * dx_acoustic * i << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * ((spl_C_l_on_T.GetY(spl_Ti.GetY(1 * dz_acoustic)* param.T00))) / (pow((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2, 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * V0 * 1e-6)) *
+						// новый способ плавления
+						fout_PTix << 1e+4 * r0 * dx_acoustic * i << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * ((spl_C_l_on_T.GetY(spl_Ti.GetY(1 * dz_acoustic) * param.T00))) / (pow((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2, 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * V0 * 1e-6)) *
 							(spl_Ti.GetY(1 * dz_acoustic) - 1.) / V2[i][Ny_acoustic / 2][1]) << endl;
 
+						// старый способ плавления
 						/*fout_PTix << 1e+4 * r0 * dx_acoustic * i << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * (((Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(1 * dz_acoustic)) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * 1.0)))) / (pow((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2, 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * V0 * 1e-6)) *
 							(spl_Ti.GetY(1 * dz_acoustic) - 1.) / V2[i][Ny_acoustic / 2][1]) << endl;*/
 
 						fout_PTex << 1e+4 * r0 * dx_acoustic * i << "   " << p0v * ((Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * spl_Te.GetY(1 * dz_acoustic)) / (100. * 100. * 100.)) / (((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * 1e-6)) *
 							(spl_Te.GetY(1 * dz_acoustic) - 1.)) << endl;
 					}
-				}
-				else
-				{
-					if ((*it_x).index_x == i && (*it_x).index_y == (Ny_acoustic / 2) && (*it_x).index_z == 1)
+
+					if ((spl_Ti.GetY(1 * dz_acoustic) * param.T00) > (Melt_metal[mt].T_melting + 1.))
 					{
-						fout_Pacx << 1e+4 * r0 * dx_acoustic * i << "   " << 0. << endl;
-						fout_PTix << 1e+4 * r0 * dx_acoustic * i << "   " << 0. << endl;
-						fout_PTex << 1e+4 * r0 * dx_acoustic * i << "   " << 0. << endl;
-						it_x++;
+						fout_PTix << 1e+4 * r0 * dx_acoustic * i << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * (Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(1 * dz_acoustic)) / (100. * 100. * 100.)) / (Melt_metal[mt].DensityLiquid * Melt_metal[mt].DensityLiquid * pow(Melt_metal[mt].u0_Liquid, 2) * V0 * 1e-6)) *
+							(spl_Ti.GetY(1 * dz_acoustic) - 1.) / V2[i][Ny_acoustic / 2][1]) << endl;
+
+						fout_PTex << 1e+4 * r0 * dx_acoustic * i << "   " << p0v * ((Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * spl_Te.GetY(1 * dz_acoustic)) / (100. * 100. * 100.)) / (Melt_metal[mt].DensityLiquid * pow(Melt_metal[mt].u0_Liquid, 2) * 1e-6)) *
+							(spl_Te.GetY(1 * dz_acoustic) - 1.)) << endl;
 					}
-					else
-					{
-						fout_Pacx << 1e+4 * r0 * dx_acoustic * i << "   " << p0v * (1. - V2[i][Ny_acoustic / 2][1]) << endl;
-
-						if ((spl_Ti.GetY(1 * dz_acoustic) * param.T00) < (Melt_metal[mt].T_melting - 1.))
-						{
-							if ((spl_Ti.GetY(1 * dz_acoustic) * param.T00) >= 1336.)
-							{
-								fout_PTix << 1e+4 * r0 * dx_acoustic * i << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * (spl_C_l_on_T.GetY(spl_Ti.GetY(1 * dz_acoustic) * param.T00)) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) *
-									(spl_Ti.GetY(1 * dz_acoustic) - 1.) / V2[i][Ny_acoustic / 2][1]) << endl;
-							}
-							else
-							{
-								fout_PTix << 1e+4 * r0 * dx_acoustic * i << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * (Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(1 * dz_acoustic)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) *
-									(spl_Ti.GetY(1 * dz_acoustic) - 1.) / V2[i][Ny_acoustic / 2][1]) << endl;
-							}
-
-							fout_PTex << 1e+4 * r0 * dx_acoustic * i << "   " << p0v * ((Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * spl_Te.GetY(1 * dz_acoustic)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * 1e-6)) *
-								(spl_Te.GetY(1 * dz_acoustic) - 1.)) << endl;
-						}
-
-						if ((spl_Ti.GetY(1 * dz_acoustic) * param.T00) >= (Melt_metal[mt].T_melting - 1.) && (spl_Ti.GetY(1 * dz_acoustic) * param.T00) <= (Melt_metal[mt].T_melting + 1.))
-						{
-							fout_PTix << 1e+4 * r0 * dx_acoustic * i << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * ((spl_C_l_on_T.GetY(spl_Ti.GetY(1 * dz_acoustic) * param.T00))) / (pow((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2, 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * V0 * 1e-6)) *
-								(spl_Ti.GetY(1 * dz_acoustic) - 1.) / V2[i][Ny_acoustic / 2][1]) << endl;
-
-							/*fout_PTix << 1e+4 * r0 * dx_acoustic * i << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * (((Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(1 * dz_acoustic)) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * 1.0)))) / (pow((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2, 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * V0 * 1e-6)) *
-								(spl_Ti.GetY(1 * dz_acoustic) - 1.) / V2[i][Ny_acoustic / 2][1]) << endl;*/
-
-							fout_PTex << 1e+4 * r0 * dx_acoustic * i << "   " << p0v * ((Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * spl_Te.GetY(1 * dz_acoustic)) / (100. * 100. * 100.)) / (((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * 1e-6)) *
-								(spl_Te.GetY(1 * dz_acoustic) - 1.)) << endl;
-						}
-					}
-
 				}
+				//else
+				//{
+				//	if ((*it_x).index_x == i && (*it_x).index_y == (Ny_acoustic / 2) && (*it_x).index_z == 1)
+				//	{
+				//		fout_Pacx << 1e+4 * r0 * dx_acoustic * i << "   " << 0. << endl;
+				//		fout_PTix << 1e+4 * r0 * dx_acoustic * i << "   " << 0. << endl;
+				//		fout_PTex << 1e+4 * r0 * dx_acoustic * i << "   " << 0. << endl;
+				//		it_x++;
+				//	}
+				//	else
+				//	{
+				//		fout_Pacx << 1e+4 * r0 * dx_acoustic * i << "   " << p0v * (1. - V2[i][Ny_acoustic / 2][1]) << endl;
+
+				//		if ((spl_Ti.GetY(1 * dz_acoustic) * param.T00) < (Melt_metal[mt].T_melting - 1.))
+				//		{
+				//			if ((spl_Ti.GetY(1 * dz_acoustic) * param.T00) >= 1336.)
+				//			{
+				//				fout_PTix << 1e+4 * r0 * dx_acoustic * i << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * (spl_C_l_on_T.GetY(spl_Ti.GetY(1 * dz_acoustic) * param.T00)) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) *
+				//					(spl_Ti.GetY(1 * dz_acoustic) - 1.) / V2[i][Ny_acoustic / 2][1]) << endl;
+				//			}
+				//			else
+				//			{
+				//				fout_PTix << 1e+4 * r0 * dx_acoustic * i << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * (Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(1 * dz_acoustic)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * V0 * 1e-6)) *
+				//					(spl_Ti.GetY(1 * dz_acoustic) - 1.) / V2[i][Ny_acoustic / 2][1]) << endl;
+				//			}
+
+				//			fout_PTex << 1e+4 * r0 * dx_acoustic * i << "   " << p0v * ((Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * spl_Te.GetY(1 * dz_acoustic)) / (100. * 100. * 100.)) / (Melt_metal[mt].Density * pow(Melt_metal[mt].u0, 2) * 1e-6)) *
+				//				(spl_Te.GetY(1 * dz_acoustic) - 1.)) << endl;
+				//		}
+
+				//		if ((spl_Ti.GetY(1 * dz_acoustic) * param.T00) >= (Melt_metal[mt].T_melting - 1.) && (spl_Ti.GetY(1 * dz_acoustic) * param.T00) <= (Melt_metal[mt].T_melting + 1.))
+				//		{
+				//			fout_PTix << 1e+4 * r0 * dx_acoustic * i << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * ((spl_C_l_on_T.GetY(spl_Ti.GetY(1 * dz_acoustic) * param.T00))) / (pow((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2, 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * V0 * 1e-6)) *
+				//				(spl_Ti.GetY(1 * dz_acoustic) - 1.) / V2[i][Ny_acoustic / 2][1]) << endl;
+
+				//			/*fout_PTix << 1e+4 * r0 * dx_acoustic * i << "   " << p0v * ((Melt_metal[mt].gi * param.T00 * (((Dependence_C_l_on_T(mt, param.T00 * spl_Ti.GetY(1 * dz_acoustic)) / (100. * 100. * 100.) + (Melt_metal[mt].Q_fusion * Melt_metal[mt].Density) / (2 * 1.0)))) / (pow((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2, 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * V0 * 1e-6)) *
+				//				(spl_Ti.GetY(1 * dz_acoustic) - 1.) / V2[i][Ny_acoustic / 2][1]) << endl;*/
+
+				//			fout_PTex << 1e+4 * r0 * dx_acoustic * i << "   " << p0v * ((Melt_metal[mt].ge * param.T00 * (spl_C_e_on_T.GetY(param.T00 * spl_Te.GetY(1 * dz_acoustic)) / (100. * 100. * 100.)) / (((Melt_metal[mt].Density + Melt_metal[mt].DensityLiquid) / 2) * pow((Melt_metal[mt].u0 + Melt_metal[mt].u0_Liquid) / 2, 2) * 1e-6)) *
+				//				(spl_Te.GetY(1 * dz_acoustic) - 1.)) << endl;
+				//		}
+				//	}
+
+				//}
 			}
 
 			//system("pause");
@@ -2698,6 +2447,12 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 			points_rupture_for_plot_z.erase(points_rupture_for_plot_z.begin(), points_rupture_for_plot_z.end());
 			points_rupture_for_plot_x.clear();
 			points_rupture_for_plot_x.erase(points_rupture_for_plot_x.begin(), points_rupture_for_plot_x.end());
+			fout_Pac.open(Pacteti[0]);
+			fout_PTi.open(Pacteti[1]);
+			fout_PTe.open(Pacteti[2]);
+			fout_Pacx.open(Pacteti[3]);
+			fout_PTix.open(Pacteti[4]);
+			fout_PTex.open(Pacteti[5]);
 
 			// открытие файлов произвожу выше
 
@@ -2754,84 +2509,28 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 
 			plt.Close_and_open_files_for_replot(for_close_and_open);
 		}
-
+		// next step
 		n++;
 		cout << " step = " << n << endl;
 
 		// Perehod na sledujuschij shag po vremeni
 		tmpe0 = tmpe1;
 		tmpe1 = tmpe2;
+
 		tmpi0 = tmpi1;
 		tmpi1 = tmpi2;
 
-		/*	a1x = a2x;
-			a1y = a2y;
-			a1z = a2z;*/
+		a1x = a2x;
+		a1y = a2y;
+		a1z = a2z;
+		b1x = b2x;
+		b1y = b2y;
+		b1z = b2z;
 
-			/*	b1x = b2x;
-				b1y = b2y;
-				b1z = b2z;*/
+		e1 = e2;
 
-				//	e1 = e2;
-					//}
-
-					/*if (melting_split == true)
-					{
-						// решение ур-й уже с учетом того, что произошло или плавление или разрыв металла
-
-						if (melting == true) // пока просто счиатем как-будто не было акустики и переходим на сл шаг по времени
-						{//
-							if (split == true)
-							{
-								// идет разрыв (откол) жидкого металла
-							}
-							n++;
-							cout << " step = " << n << endl;
-
-							// Perehod na sledujuschij shag po vremeni
-							tmpe0 = tmpe1;
-							tmpe1 = tmpe2;
-							tmpi0 = tmpi1;
-							tmpi1 = tmpi2;
-
-							a1x = a2x;
-							a1y = a2y;
-							a1z = a2z;
-							b1x = b2x;
-							b1y = b2y;
-							b1z = b2z;
-
-							e1 = e2;
-						}
-
-						if (split == true) // разрыв проиошел раньше
-						{
-
-							// здесь нужно зафиксироваь те узлы где произошел откол и в этих узлах не рассчитывать тепловую задачу
-
-							n++;
-							cout << " step = " << n << endl;
-
-							// Perehod na sledujuschij shag po vremeni
-							tmpe0 = tmpe1;
-							tmpe1 = tmpe2;
-							tmpi0 = tmpi1;
-							tmpi1 = tmpi2;
-
-							a1x = a2x;
-							a1y = a2y;
-							a1z = a2z;
-							b1x = b2x;
-							b1y = b2y;
-							b1z = b2z;
-
-							e1 = e2;
-						}
-
-					}*/
-
-
-	} while (tt <= 22000/*300000*//*8000/*nn < 1000*/);
+		cout << endl;
+	} while (tt <= 8000/*nn < 1000*/);
 
 	t = clock() - t;
 
@@ -2840,7 +2539,7 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 		(int)t << "   " << ((double)t) / CLOCKS_PER_SEC;
 	cout << endl;
 
-	// могут приодитьс (если вдру моментов времени меньше завленных линий на графике, и как результат мы е запишем данные из матрицы в файл )
+	// могут приодитьс (если вдруг моментов времени меньше заявленных линий на графике, и как результат мы не запишем данные из матрицы в файл )
 	if (npxzt < count_of_lines)
 	{
 		npxzt = count_of_lines;
@@ -2877,7 +2576,7 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 	//	plt.SetDataOnPlot3D(11, Nx, Ny, Nz, 1e+4 * dx * param.r0, 1e+4 * dy * param.r0, 1e+4 * dz / param.kabs, Field_melting, 1., Nx / 2, Ny / 2, NULL, 11, current_number_line_melting, NULL, empty, fun_on_z);
 	//}
 
-	vector<string> Legenda = { "500 fs", "1000 fs", "1500 fs","2000 fs" , "3000 fs" , "4000 fs" , "5000 fs" , "6000 fs", "7000 fs", "8000 fs" };
+	//vector<string> Legenda = { "500 fs", "1000 fs", "1500 fs","2000 fs" , "3000 fs" , "4000 fs" , "5000 fs" , "6000 fs", "7000 fs", "8000 fs" };
 	namefile.clear();
 	namefile = "file P(x), bar " + metall + ", " + type_beam + ", pulse duration = " + ConvertNumToStringdouble(tp * 1e+15) + "fs, moment time = " + ConvertNumToStringdouble(tt) + "fs";
 	plt.ShowDataOnPlot2D(8, count_of_lines, Legenda, namefile, true);
@@ -2889,16 +2588,17 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 	vector<string> Legenda_melting = Legenda_melting_tmp;
 	Legenda_melting.push_back("T melting");
 	namefile = "file Profile Teperature T(x)";
-	plt.ShowDataOnPlot2D(12, 11, Legenda_melting, namefile, true);
+	//plt.ShowDataOnPlot2D(12, 11, Legenda_melting, namefile, true);
 	namefile.clear();
 	namefile = "file Profile Teperature T(z)";
-	plt.ShowDataOnPlot2D(11, 11, Legenda_melting, namefile, true);
+	//plt.ShowDataOnPlot2D(11, 11, Legenda_melting, namefile, true);
 	namefile.clear();
 
 	sum_t = clock() - t;
 
 	plt.Close_all_files_and_plots(number_plots);
 }
+
 
 inline int random_ab(int a, int b, std::default_random_engine& g)
 {
@@ -2909,7 +2609,6 @@ inline int random_ab(int a, int b, std::default_random_engine& g)
 
 int main()
 {
-	//setlocale(LC_ALL, "rus");
 	TypeBeam tp = Gauss;
 	cout << " tp = " << tp << endl;
 	cout << endl;
@@ -2921,20 +2620,28 @@ int main()
 
 	int Nx_acoustic = dxy; // 100 //100; // chislo uzlov po x // 100
 	int Ny_acoustic = dxy;// 100// 100; // chislo uzlov po y //100
-	int Nz_acoustic = 10000;// 10000; // !!!!!!
+	int Nz_acoustic = 400;// 400;// 10000; // !!!!!!
 
-	double*** V2, *** a1y, *** a1z, *** a1x, *** b1x, *** b1y, *** b1z, *** e1, *** tmpe0, *** tmpe1, *** tmpe2, *** tmpi0, *** tmpi1, *** tmpi2;    // davlenie, gorizontal'naja skorost', vertikal'naja skorost', temperatura
-	double*** Ti_acoustic, *** Te_acoustic;
-
+	double*** V2, *** a1y, *** a2y, *** a1z, *** a2z, *** a2x, *** a1x, *** b1x, *** b2x, *** b1y, *** b2y, *** b1z, *** b2z, *** e2, *** e1, *** tmpe0, *** tmpe1, *** tmpe2, *** tmpi0,*** tmpi1, *** tmpi2;    // davlenie, gorizontal'naja skorost', vertikal'naja skorost', temperatura
+	double*** Ti_acoustic, *** Te_acoustic; // массивы для переопрелеления сетки температуры под акустику
+																																																						 
 	// 21 массива
+
 	V2 = new double** [Nx_acoustic];
 	a1y = new double** [Nx_acoustic]; // Euler coordinates
+	a2y = new double** [Nx_acoustic]; // Euler coordinates
 	a1z = new double** [Nx_acoustic]; // Euler coordinates
+	a2z = new double** [Nx_acoustic]; // Euler coordinates
 	a1x = new double** [Nx_acoustic]; // Euler coordinates
+	a2x = new double** [Nx_acoustic]; // Euler coordinates
 	b1x = new double** [Nx_acoustic]; // particle velocity
+	b2x = new double** [Nx_acoustic]; // particle velocity
 	b1y = new double** [Nx_acoustic]; // particle velocity
+	b2y = new double** [Nx_acoustic]; // particle velocity
 	b1z = new double** [Nx_acoustic]; // particle velocity
+	b2z = new double** [Nx_acoustic]; // particle velocity
 	e1 = new double** [Nx_acoustic]; // Pressure
+	e2 = new double** [Nx_acoustic]; // Pressure
 	tmpe0 = new double** [Nx_heat]; // temperature of electrons 
 	tmpe1 = new double** [Nx_heat]; // temperature of electrons 
 	tmpe2 = new double** [Nx_heat]; // temperature of electrons 
@@ -2947,24 +2654,38 @@ int main()
 	{
 		V2[i] = new double* [Ny_acoustic];
 		a1y[i] = new double* [Ny_acoustic];
+		a2y[i] = new double* [Ny_acoustic];
 		a1z[i] = new double* [Ny_acoustic];
+		a2z[i] = new double* [Ny_acoustic];
 		a1x[i] = new double* [Ny_acoustic];
+		a2x[i] = new double* [Ny_acoustic];
 		b1x[i] = new double* [Ny_acoustic];
+		b2x[i] = new double* [Ny_acoustic];
 		b1y[i] = new double* [Ny_acoustic];
+		b2y[i] = new double* [Ny_acoustic];
 		b1z[i] = new double* [Ny_acoustic];
+		b2z[i] = new double* [Ny_acoustic];
 		e1[i] = new double* [Ny_acoustic];
+		e2[i] = new double* [Ny_acoustic];
 		Ti_acoustic[i] = new double* [Ny_acoustic];
 		Te_acoustic[i] = new double* [Ny_acoustic];
 		for (int j = 0; j < Ny_acoustic; j++)
 		{
 			V2[i][j] = new double[Nz_acoustic];
 			a1y[i][j] = new double[Nz_acoustic];
+			a2y[i][j] = new double[Nz_acoustic];
 			a1z[i][j] = new double[Nz_acoustic];
+			a2z[i][j] = new double[Nz_acoustic];
 			a1x[i][j] = new double[Nz_acoustic];
+			a2x[i][j] = new double[Nz_acoustic];
 			b1x[i][j] = new double[Nz_acoustic];
+			b2x[i][j] = new double[Nz_acoustic];
 			b1y[i][j] = new double[Nz_acoustic];
+			b2y[i][j] = new double[Nz_acoustic];
 			b1z[i][j] = new double[Nz_acoustic];
+			b2z[i][j] = new double[Nz_acoustic];
 			e1[i][j] = new double[Nz_acoustic];
+			e2[i][j] = new double[Nz_acoustic];
 			Ti_acoustic[i][j] = new double[Nz_acoustic];
 			Te_acoustic[i][j] = new double[Nz_acoustic];
 		}
@@ -2989,33 +2710,7 @@ int main()
 		}
 	}
 
-	//double/*, *** massive_melting_null, *** massive_melting_tmp1, *** massive_melting_tmp2*/;
-	/*massive_melting_null = new double** [Nx];
-	massive_melting_tmp1 = new double** [Nx];
-	massive_melting_tmp2 = new double** [Nx];*/
-	//for (int i = 0; i < Nx_heat; i++)
-	//{
-	//	/*massive_melting_null[i] = new double* [Ny];
-	//	massive_melting_tmp1[i] = new double* [Ny];
-	//	massive_melting_tmp2[i] = new double* [Ny];*/
-	//	for (int j = 0; j < Ny_heat; j++)
-	//	{
-	//		/*massive_melting_null[i][j] = new double[Nz];
-	//		massive_melting_tmp1[i][j] = new double[Nz];
-	//		massive_melting_tmp2[i][j] = new double[Nz];*/
-	//	}
-	//}
-
-	/*double** fict_masive;
-	fict_masive = new double* [Nx];
-
-	for (int i = 0; i < Nx; i++)
-	{
-		fict_masive[i] = new double[Ny];
-	}*/
-
 	double TTT = 300.;
-
 	/*  отрисовка графиков */
 
 	Splayn spl_G_e_on_T, spl_C_e_on_T; //= Calculation_Interpolation("Ge_Au_new.txt");
@@ -3046,7 +2741,7 @@ int main()
 	fout4.precision(10);
 	double d = 0.5;//121.;
 
-	for (double i = 1338 - d - 2; i <= 1338. + d + 2; i+=0.5)
+	for (double i = 1338 - d - 2; i <= 1338. + d + 2; i += 0.5)
 	{
 		if (i < (1338. - d))
 		{
@@ -3056,9 +2751,9 @@ int main()
 
 		if (i >= (1338. - d) && i <= (1338. + d))
 		{
-		///	//fout4 << i << "   " << (1.11* 300.* (((Dependence_C_l_on_T(Au, i) / (100. * 100. * 100.) + (63.7 * 19.3) / (2 * 1.)))) / (pow((19.3 + 17.) / 2, 2) * pow((3.24e+5 + 2.567e+5) / 2, 2) * 1e-6)) << endl;
-			fout4 << i << "   " << (((Dependence_C_l_on_T(Au, i) / (100. * 100. * 100.) + (63.7* 19.3) * delta_function(i,1338.,d) ))) << endl;
-		///	//fout4 << i << "   " << 0. << endl;
+			///	//fout4 << i << "   " << (1.11* 300.* (((Dependence_C_l_on_T(Au, i) / (100. * 100. * 100.) + (63.7 * 19.3) / (2 * 1.)))) / (pow((19.3 + 17.) / 2, 2) * pow((3.24e+5 + 2.567e+5) / 2, 2) * 1e-6)) << endl;
+			fout4 << i << "   " << (((Dependence_C_l_on_T(Au, i) / (100. * 100. * 100.) + (63.7 * 19.3) * delta_function(i, 1338., d)))) << endl;
+			///	//fout4 << i << "   " << 0. << endl;
 		}
 
 		if (i > (1338. + d))
@@ -3076,7 +2771,7 @@ int main()
 	fout4.open("Cl_depend.txt");
 
 	for (double i = 1338 - d - 2.; i <= 1338. + d + 2.; i += 0.001)
-	//for (double i = 1287.99; i <= 1288.05; i += 0.001)
+		//for (double i = 1287.99; i <= 1288.05; i += 0.001)
 	{
 		fout4 << i << "   " << spl_C_l_on_T.GetY(i) << endl;
 	}
@@ -3114,188 +2809,23 @@ int main()
 
 	system("pause");
 
-	/*  Параметры лазера */
 
-	//double P0 = 0.25e+11;//1e+8; 1e+9; // input intensity, W/cm2
-	double P0 = 0.15e+12;//3.875e+9;//0.375e+10; // 1e+8;//1e+8; 1e+9; // input intensity, W/cm2
-	double tpp = 1e-13;// 1e-13; // pulse duration, s
-	//double tpp = 1e-12;// 1e-13; // pulse duration, s
-
-	/*string str = ConvertNumToStringdouble(P0 * tpp * 100 * 100);
-	cout << str << endl;*/
-
-	cout << endl << endl;
-	cout << " Fluence = " << P0 * tpp << endl;
-
-	//ifstream fin("Points.txt");
-	vector<Point3D> v;/*= {
-		Point3D(50,50,1),
-		Point3D(48,49,3),
-		Point3D(48,50,2),
-		Point3D(48,51,1),
-		Point3D(49,48,3),
-		Point3D(49,49,1),
-		Point3D(49,50,2),
-		Point3D(49,51,1),
-		Point3D(49,52,2),
-		Point3D(50,48,1),
-		Point3D(50,49,4),
-		Point3D(50,50,1),
-		Point3D(50,51,1),
-		Point3D(50,52,3),
-		Point3D(51,48,1),
-		Point3D(51,49,1),
-		Point3D(51,50,1),
-		Point3D(51,51,1),
-		Point3D(51,52,1),
-		Point3D(52,49,1),
-		Point3D(52,50,1),
-		Point3D(52,51,1),
-		Point3D(47,49,3),
-		Point3D(47,49,3),
-		Point3D(47,49,6),
-		Point3D(47,49,5),
-		Point3D(47,49,3),
-		Point3D(47,49,2),
-		Point3D(47,49,2),
-		Point3D(47,49,3),
-		Point3D(47,49,3),
-		Point3D(47,49,2),
-		Point3D(47,49,1),
-		Point3D(47,50,2),
-		Point3D(47,50,3),
-		Point3D(47,50,1),
-		Point3D(47,51,4),
-		Point3D(47,51,1),
-		Point3D(47,51,3),
-		Point3D(47,51,2),
-		Point3D(48,48,1),
-		Point3D(48,49,1),
-		Point3D(48,50,1),
-		Point3D(48,51,1),
-		Point3D(48,52,1),
-		Point3D(49,47,1),
-		Point3D(49,48,1),
-		Point3D(49,49,1),
-		Point3D(49,50,1),
-		Point3D(49,51,1),
-		Point3D(49,52,1),
-		Point3D(49,53,1),
-		Point3D(50,47,1),
-		Point3D(50,48,1),
-		Point3D(50,49,1),
-		Point3D(50,50,1),
-		Point3D(50,51,1),
-		Point3D(50,52,1),
-		Point3D(49,47,2),
-		Point3D(49,48,2)
-	};
-*/
-
-	if (v.empty())
-	{
-		cout << " empty " << endl;
-	}
-	else
-	{
-		cout << " not empty " << endl;
-	}
-	cout << v.empty() << endl;
-
-	std::default_random_engine g(std::chrono::system_clock::now().time_since_epoch().count());
-	for (int i = 0; i < 60; i++)
-	{
-		srand(static_cast<unsigned int>(time(nullptr)));
-		int x = random_ab(47, 53, g);//47 + rand() % 53; // случайное число - формула
-		srand(static_cast<unsigned int>(time(nullptr)));
-		int y = random_ab(47, 53, g); ;// 47 + rand() % 53; // случайное число - формула
-		srand(static_cast<unsigned int>(time(nullptr)));
-		int z = random_ab(1, 6, g); ;// 1 + rand() % 6; // случайное число - формула
-
-		Point3D tmp(x, y, z);
-		cout << tmp.index_x << "   " << tmp.index_y << "   " << tmp.index_z << endl;
-		v.push_back(tmp);
-	}
-
-	if (v.empty())
-	{
-		cout << " empty " << endl;
-	}
-	else
-	{
-		cout << " not empty " << endl;
-	}
-	cout << v.empty() << endl;
-	cout << endl <<" size "<< v.size() << endl;
-	//Point3D tmp();
-	vector<Point3D>::iterator iter;
-	My_unique(v);
-	cout << endl << v.size() << endl;
-
-	cout << endl << endl << endl << endl;
+	//type metal, type beam, kte, Ce,Ci,	   gamma,    ge,   gi, us	tp s	
+																								//I0 = 1e+7
+	// double*** V2, double*** a1y, double*** a2y, double*** a1z, double*** a2z, double*** a2x, double*** a1x, double*** b1x, double*** b2x, double*** b1y, double*** b2y, double*** b1z, double*** b2z, double*** e2, double*** e1, double*** F, double*** tmpe0, double*** tmpe1, double*** tmpe2, double*** tmpi0, double*** tmpi1, double*** tmpi2, double** Pxt, double** Pzt, int Nx, int Ny, int Nz, Splayn spl_C_l_on_T)
+	MainProcedure(Au, Gauss, 3.115, 19.32, 5.472e-2, 2.550, 2.5e+10, 1.5, 1.11, 3.24e+5, 1e-13, /*0.15e+12*/ 1.5e+11, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, Nx_heat, Ny_heat, Nz_heat, Nx_acoustic, Ny_acoustic, Nz_acoustic, spl_C_l_on_T, Te_acoustic, Ti_acoustic, "Depth1.txt");
+	system("pause");
+	//MainProcedure(Ni, Gauss, 0.900, 8.96, 2.733e-2, 3.910, 4.05e+12, 1.5, 1.83, 5.63e+5, 1e-13, 1e+7, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, Nx_heat, Ny_heat, Nz_heat, Nx_acoustic, Ny_acoustic, Nz_acoustic, spl_C_l_on_T, Te_acoustic, Ti_acoustic);
 	system("pause");
 
-	sort(v.begin(), v.end(), comp_z);
-	//My_unique(v);
-	//iter = unique(v.begin(), v.end());
-	for (iter = v.begin(); iter != v.end(); iter++)
-	{
-		cout << (*iter).index_z << "   " << (*iter).index_y << "   " << (*iter).index_x << endl;
-	}
-	cout << endl << endl;
-	cout << endl << v.size() << endl;
-
-	system("pause");
-
-	MySort_Point3D_y(v);
-	cout << endl;
-	for (iter = v.begin(); iter != v.end(); iter++)
-	{
-		cout << (*iter).index_z << "   " << (*iter).index_y << "   " << (*iter).index_x << endl;
-	}
-	cout << endl << v.size() << endl;
-
-	system("pause");
-
-	MySort_Point3D_x(v);
-	cout << endl;
-	cout << endl << v.size() << endl;
-	for (iter = v.begin(); iter != v.end(); iter++)
-	{
-		cout << (*iter).index_z << "   " << (*iter).index_y << "   " << (*iter).index_x << endl;
-	}
-	cout << endl << v.size() << endl;
-
-	cout << "the end " << endl;
-	system("pause");
-
-	//type metal, type beam, kte, Ce,Ci,	   gamma,    ge,   gi, us	tp s, I0 W/cm*K	
-
-	MainProcedure(Au, Gauss, 3.115, 19.32, 5.472e-2, 2.550, 2.5e+10, 1.5, 1.11, 3.24e+5, tpp, P0, V2, a1y,/* a2y,*/ a1z, /*a2z, a2x,*/ a1x, b1x, /*b2x,*/ b1y,/* b2y,*/ b1z,/* b2z,*/ /*e2,*/ e1, /*F,*/ tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, Te_acoustic, Ti_acoustic, Nx_heat, Ny_heat, Nz_heat, Nx_acoustic, Ny_acoustic, Nz_acoustic/* dz_acoustic,*/ /*A1, A1i, B1, CC1, CC2,*/ /*kte, kti, Ce, Ci, gamma, copy_tmpe1, copy_tmpi1*//*, massive_melting_null, massive_melting_tmp1, massive_melting_tmp2, fict_masive*/, "Depth2.txt", spl_C_l_on_T);
-
-
-	//MainProcedure(Au, Gauss, 3.115, 19.32, 5.472e-2, 2.550, 2.5e+10, 1.5, 1.11, 3.24e+5, 5e-12, 0.8e+10, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, Nx, Ny, Nz, A1, A1i, B1, CC1, CC2, kte, kti, Ce, Ci, gamma, copy_tmpe1, copy_tmpi1, massive_melting_null, massive_melting_tmp1,massive_melting_tmp2, fict_masive, "Depth2.txt");
-	//MainProcedure(Au, Gauss, 3.115, 19.32, 5.472e-2, 2.550, 2.5e+10, 1.5, 1.11, 3.24e+5, 5e-12, 0.65e+10, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, Nx, Ny, Nz, A1, A1i, B1, CC1, CC2, kte, kti, Ce, Ci, gamma, copy_tmpe1, copy_tmpi1, massive_melting_null, massive_melting_tmp1,massive_melting_tmp2, fict_masive, "Depth23.txt");
-	//MainProcedure(Au, Gauss, 3.115, 19.32, 5.472e-2, 2.550, 2.5e+10, 1.5, 1.11, 3.24e+5, 5e-12, 0.7e+10, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, Nx, Ny, Nz, A1, A1i, B1, CC1, CC2, kte, kti, Ce, Ci, gamma, copy_tmpe1, copy_tmpi1, massive_melting_null, massive_melting_tmp1, massive_melting_tmp2, fict_masive, "Depth234.txt");
-	//MainProcedure(Au, Gauss, 3.115, 19.32, 5.472e-2, 2.550, 2.5e+10, 1.5, 1.11, 3.24e+5, 5e-12, 0.75e+10, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, Nx, Ny, Nz, A1, A1i, B1, CC1, CC2, kte, kti, Ce, Ci, gamma, copy_tmpe1, copy_tmpi1, massive_melting_null, massive_melting_tmp1, massive_melting_tmp2, fict_masive, "Depth2345.txt");
-	//MainProcedure(Au, Gauss, 3.115, 19.32, 5.472e-2, 2.550, 2.5e+10, 1.5, 1.11, 3.24e+5, 5e-12, 0.8e+10, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, Nx, Ny, Nz, A1, A1i, B1, CC1, CC2, kte, kti, Ce, Ci, gamma, copy_tmpe1, copy_tmpi1, massive_melting_null, massive_melting_tmp1, massive_melting_tmp2, fict_masive, "Depth23456.txt");
-	///*MainProcedure(Au, Gauss, 3.115, 19.32, 5.472e-2, 2.550, 2.5e+10, 1.5, 1.11, 3.24e+5, 5e-12, 0.55e+10, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, Nx, Ny, Nz, A1, A1i, B1, CC1, CC2, kte, kti, Ce, Ci, gamma, copy_tmpe1, copy_tmpi1, massive_melting_null, massive_melting_tmp1, massive_melting_tmp2, fict_masive);
-	//MainProcedure(Au, Gauss, 3.115, 19.32, 5.472e-2, 2.550, 2.5e+10, 1.5, 1.11, 3.24e+5, 1e-11, 0.375e+10, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, Nx, Ny, Nz, A1, A1i, B1, CC1, CC2, kte, kti, Ce, Ci, gamma, copy_tmpe1, copy_tmpi1, massive_melting_null, massive_melting_tmp1, massive_melting_tmp2, fict_masive);*/
-
-
-
-	system("pause");
-	//MainProcedure(Ni, Gauss, 0.900, 8.96, 2.733e-2, 3.910, 4.05e+12, 1.5, 1.83, 5.63e+5, 1e-13, 1e+7, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi1, tmpi2, Nx, Ny, Nz);
-	//system("pause");
-
-	//MainProcedure(Au, Gauss, 3.115, 19.32, 5.472e-2, 2.550, 2.5e+10, 1.5, 1.11, 3.24e+5, 5e-14, 0.2e+8, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi1, tmpi2, Nx, Ny, Nz);
-	//MainProcedure(Au, Gauss, 3.115, 19.32, 5.472e-2, 2.550, 2.5e+10, 1.5, 1.11, 3.24e+5, 2e-13, 0.5e+7, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi1, tmpi2, Nx, Ny, Nz);
-	//MainProcedure(Au, Gauss, 3.115, 19.32, 5.472e-2, 2.550, 2.5e+10, 1.5, 1.11, 3.24e+5, 5e-13, 0.2e+7, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi1, tmpi2, Nx, Ny, Nz);
-	//MainProcedure(Au, Gauss, 3.115, 19.32, 5.472e-2, 2.550, 2.5e+10, 1.5, 1.11, 3.24e+5, 1e-13, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi1, tmpi2, Pxt, Pzt, Nx, Ny, Nz);
+	/*MainProcedure(Au, Gauss, 3.115, 19.32, 5.472e-2, 2.550, 2.5e+10, 1.5, 1.11, 3.24e+5, 5e-14, 0.2e+8, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi1, tmpi2, Pxt, Pzt, Nx, Ny, Nz);
+	MainProcedure(Au, Gauss, 3.115, 19.32, 5.472e-2, 2.550, 2.5e+10, 1.5, 1.11, 3.24e+5, 2e-13, 0.5e+7, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi1, tmpi2, Pxt, Pzt, Nx, Ny, Nz);
+	MainProcedure(Au, Gauss, 3.115, 19.32, 5.472e-2, 2.550, 2.5e+10, 1.5, 1.11, 3.24e+5, 5e-13, 0.2e+7, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi1, tmpi2, Pxt, Pzt, Nx, Ny, Nz);
+	*///MainProcedure(Au, Gauss, 3.115, 19.32, 5.472e-2, 2.550, 2.5e+10, 1.5, 1.11, 3.24e+5, 1e-13, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi1, tmpi2, Pxt, Pzt, Nx, Ny, Nz);
 	//MainProcedure(Au, Gauss, 3.115, 19.32, 5.472e-2, 2.550, 2.5e+10, 1.5, 1.11, 3.24e+5, 2e-13, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi1, tmpi2, Pxt, Pzt, Nx, Ny, Nz);
-	//system("pause");
+	system("pause");
 
-	//type metal, type beam, kte, ro0, 	Ce,			Ci,	   gamma,  ge, gi,		us	  tp s	
+		//type metal, type beam, kte, ro0, 	Ce,			Ci,	   gamma,  ge, gi,		us	  tp s	
 //	MainProcedure(Au, Vortex, 3.115, 19.32, 5.472e-2, 2.550, 2.5e+10, 1.5, 1.11, 3.24e+5, 1e-14, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi1, tmpi2, Pxt, Pzt, Nx, Ny, Nz);
 	//MainProcedure(Au, Vortex, 3.115, 19.32, 5.472e-2, 2.550, 2.5e+10, 1.5, 1.11, 3.24e+5, 5e-14, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi1, tmpi2, Pxt, Pzt, Nx, Ny, Nz);
 	//MainProcedure(Au, Vortex, 3.115, 19.32, 5.472e-2, 2.550, 2.5e+10, 1.5, 1.11, 3.24e+5, 1e-13, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi1, tmpi2, Pxt, Pzt, Nx, Ny, Nz);
@@ -3313,7 +2843,7 @@ int main()
 	//MainProcedure(Ni, Vortex, 0.900, 8.96, 2.733e-2, 3.910, 4.05e+12, 1.5, 1.83, 5.63e+5, 5e-14, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi1, tmpi2, Pxt, Pzt, Nx, Ny, Nz);
 	//MainProcedure(Ni, Vortex, 0.900, 8.96, 2.733e-2, 3.910, 4.05e+12, 1.5, 1.83, 5.63e+5, 1e-13, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi1, tmpi2, Pxt, Pzt, Nx, Ny, Nz);
 	//MainProcedure(Ni, Vortex, 0.900, 8.96, 2.733e-2, 3.910, 4.05e+12, 1.5, 1.83, 5.63e+5, 2e-13, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi1, tmpi2, Pxt, Pzt, Nx, Ny, Nz);	// продублировать по разным длительностям импульса
-	//system("pause");
+	system("pause");
 
 
 	//type metal, type beam, kte,   Ce,	???		Ci,	   gamma,  ge,  gi,     us	   tp s	
@@ -3322,7 +2852,7 @@ int main()
 	MainProcedure(Cu, Gauss, 3.930, 8.92, 2.733e-2, 3.568, 1.0e+11, 1.5, 1.96, 4.73e+5, 1e-13, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi1, tmpi2, Pxt, Pzt, Nx, Ny, Nz);
 	MainProcedure(Cu, Gauss, 3.930, 8.92, 2.733e-2, 3.568, 1.0e+11, 1.5, 1.96, 4.73e+5, 2e-13, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi1, tmpi2, Pxt, Pzt, Nx, Ny, Nz);
 
-	//type metal, type beam,  kte,   Ce,??			Ci,	   gamma,  ge,  gi,     us	   tp s
+	//type metal, type beam,  kte,   Ce,??			Ci,	   gamma,  ge,  gi,     us	   tp s		
 	MainProcedure(Cu, Vortex, 3.930, 8.92, 2.733e-2, 3.568, 1.0e+11, 1.5, 1.96, 4.73e+5, 1e-14, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi1, tmpi2, Pxt, Pzt, Nx, Ny, Nz);
 	MainProcedure(Cu, Vortex, 3.930, 8.92, 2.733e-2, 3.568, 1.0e+11, 1.5, 1.96, 4.73e+5, 5e-14, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi1, tmpi2, Pxt, Pzt, Nx, Ny, Nz);
 	MainProcedure(Cu, Vortex, 3.930, 8.92, 2.733e-2, 3.568, 1.0e+11, 1.5, 1.96, 4.73e+5, 1e-13, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, F, tmpe0, tmpe1, tmpe2, tmpi1, tmpi2, Pxt, Pzt, Nx, Ny, Nz);
