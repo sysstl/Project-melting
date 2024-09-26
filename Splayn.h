@@ -7,6 +7,8 @@
 
 using namespace std;
 
+enum Direction { x, y, z };
+
 struct Point
 {
 	Point(double x, double y) : x{ x }, y{ y } {}
@@ -51,8 +53,8 @@ class Splayn
 {
 public:
 	Splayn();
-	void SetInitialData(VecD X, size_t power);
-	void InterpolateFast(size_t power, double*** Tei, int fix_x, int fix_y);
+	void SetInitialData(VecD X, VecD Y, VecD Z, size_t power);
+	void InterpolateFast(size_t power, double*** Tei, int fix_x, int fix_y, int fix_z, Direction dr);
 	void Interpolate(VecD X, VecD Y, size_t power);
 	double GetY(double X);
 	//double GetYFast(double X);
@@ -64,7 +66,7 @@ public:
 	void Calculation_InterpolationFast(string fiename);
 
 private:
-	VecD _X;
+	VecD _X, _Y, _Z;
 	std::vector<Polinomial> _Polinoms;
 	Matrix mat;
 	VecD _Diagonal;
