@@ -1,4 +1,162 @@
+#include "Splayn.h"
+#include <iostream>
 
+using namespace std;
+
+int count_splayn = 0;
+
+Polinomial pow(Polinomial pol, size_t power)
+{
+	Polinomial Result = pol;
+	for (size_t i = 1; i < power; i++) {
+		Result *= pol;
+	}
+	return Result;
+}
+
+size_t GetCoeffDeriv(size_t value, size_t power)
+{
+	size_t Result = value;
+	for (size_t i = 1; i < power; i++) {
+		Result *= (--value);
+	}
+	return Result;
+}
+
+Polinomial::Polinomial()
+{
+	this->_Coefficients = VecD(1, 0.0);
+}
+
+Polinomial::Polinomial(VecD Coefficients) : _Coefficients(Coefficients)
+{}
+
+double Polinomial::GetY(double X)
+{
+	double Result = 0;
+	for (size_t i = 0; i < this->_Coefficients.size(); i++) {
+		Result += this->_Coefficients[i] * pow(X, i);
+	}
+	return Result;
+}
+
+size_t Polinomial::GetMaxPower()
+{
+	return (this->_Coefficients.size() - 1);
+}
+
+Polinomial Polinomial::operator*(Polinomial & other)
+{
+	int size = ((this->_Coefficients.size() - 1) + (other._Coefficients.size() - 1) + 1);
+	VecD Result(size, 0.0);
+	for (size_t i = 0; i < this->_Coefficients.size(); ++i) {
+		for (size_t j = 0; j < other._Coefficients.size(); ++j) {
+			Result[i + j] += this->_Coefficients[i] * other._Coefficients[j];
+		}
+	}
+	return Polinomial(Result);
+}
+
+Polinomial Polinomial::operator*=(Polinomial other)
+{
+	int size = ((this->_Coefficients.size() - 1) + (other._Coefficients.size() - 1) + 1);
+	VecD Result(size, 0.0);
+	for (size_t i = 0; i < this->_Coefficients.size(); ++i) {
+		for (size_t j = 0; j < other._Coefficients.size(); ++j) {
+			Result[i + j] += this->_Coefficients[i] * other._Coefficients[j];
+		}
+	}
+	this->_Coefficients = Result;
+	return *this;
+}
+
+Polinomial Polinomial::operator+(Polinomial & other)
+{
+	VecD Result(this->_Coefficients), ToSum(other._Coefficients);
+	(this->_Coefficients.size() > other._Coefficients.size()) ? ToSum.resize(Result.size(), 0.0) : Result.resize(ToSum.size(), 0.0);
+	for (size_t i = 0; i < ToSum.size(); i++) {
+		Result[i] += ToSum[i];
+	}
+	return Polinomial(Result);
+}
+
+Polinomial Polinomial::operator+=(Polinomial other)
+{
+	*this = *this + other;
+	return *this;
+}
+
+Polinomial Polinomial::operator-(Polinomial & other)
+{
+	VecD Result(this->_Coefficients), ToSub(other._Coefficients);
+	(this->_Coefficients.size() > other._Coefficients.size()) ? ToSub.resize(Result.size(), 0.0) : Result.resize(ToSub.size(), 0.0);
+	for (size_t i = 0; i < ToSub.size(); i++) {
+		Result[i] -= ToSub[i];
+	}
+	return Polinomial(Result);
+}
+
+Polinomial Polinomial::operator*=(double value)
+{
+	for (size_t i = 0; i < this->_Coefficients.size(); i++) {
+		this->_Coefficients[i] *= value;
+	}
+	return *this;
+}
+
+Polinomial Polinomial::operator*(double value)
+{
+	Polinomial Result = *this;
+	for (size_t i = 0; i < this->_Coefficients.size(); i++) {
+		Result._Coefficients[i] = this->_Coefficients[i] * value;
+	}
+	return Result;
+}
+
+Polinomial Polinomial::operator/=(double value)
+{
+	for (size_t i = 0; i < this->_Coefficients.size(); i++) {
+		this->_Coefficients[i] /= value;
+	}
+	return *this;
+}
+
+VecD& Polinomial::operator[](int Index)
+{
+	return this->_Coefficients;
+}
+
+void Polinomial::OutPut()
+{
+	size_t size = this->_Coefficients.size();
+	for (size_t i = 0; i < size; i++) {
+		if (i != size - 1) {
+			std::cout << std::setprecision(15) << this->_Coefficients[i] << "*x^" << i << '+';
+		}
+		else {
+			std::cout << std::setprecision(15) << this->_Coefficients[i] << "*x^" << i;
+		}
+	}
+}
+
+Splayn::Splayn()
+{}
+
+void Splayn::SetInitialData(VecD X, VecD Y, VecD Z, size_t power)
+{
+	this->_X = X;
+	this->_Y = Y;
+	this->_Z = Z;
+	//this->_Polinoms.clear();
+	//size_t NumberOfPoints = X.size();
+	size_t size = (power + 1) * (Z.size() - 1);
+	VecD Diagonal(size, 1.0);
+	this->_Diagonal = Diagonal;
+	double dx = this->_X[1] - this->_X[0];// равномерная сетка (если будет неравномерная сетка, то нужно одпраить в методе способ заполнения диагонали)
+	for (size_t i = 1; i < this->_Diagonal.size(); i += 2) {
+		this->_Diagonal[i] = dx;
+	}
+}
 
 void Splayn::InterpolateFast(size_t power, double*** Tei, int fix_x, int fix_y, int fix_z, Direction dr)
 {
