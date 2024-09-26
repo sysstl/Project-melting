@@ -48,6 +48,16 @@ GnuPlot::GnuPlot(int number_of_plots_, vector<string> filename_)
 	}
 }
 
+GnuPlot::GnuPlot(vector<string> filename_) 
+{
+	number_of_plots = 1;
+	FILE* gnuplotPipe_tmp;
+	gnuplotPipe_tmp = new FILE; // создание файла дл гнуплота чтобы записывать туда комады дл гнуплота
+	gnuplotPipe.push_back(gnuplotPipe_tmp); // вектор файлов
+	gnuplotPipe[0] = _popen(GetGPPath().c_str(), "w"); // открываем текущий плот и свзываем его с его же файлом
+	filename = filename_;
+}
+
 void GnuPlot::SetParametrs2D(int Current_number_plot, int number_of_lines, int width_line, string title_plot, string xlabel, string ylabel) // Current_number_plot=0,1,2, ....
 {
 	//gnuplotPipe[Current_number_plot] = _popen(GetGPPath().c_str(), "w"); // открываем текущий плот
@@ -320,7 +330,7 @@ void GnuPlot::SetDataOnPlot1D(int Current_number_plot, int Nx, double dx, double
 	}
 }
 
-void GnuPlot::SetDataOnPlot2D(int Current_number_plot, int Nx, int Ny, double dx, double dy, double** fun_dimensionless, double parametr_for_dimension, int fixed_point_on_axis_x, int fixed_point_on_axis_y, int number_of_lines, int current_number_of_line, double moment_of_time, vector<double**> vec, Profile prof)
+void GnuPlot::SetDataOnPlot2D(int Current_number_plot, double** fun_dimensionless, double parametr_for_dimension, int fixed_point_on_axis_x, int fixed_point_on_axis_y, int number_of_lines, int current_number_of_line, double moment_of_time, vector<double**> vec, Profile prof)
 {
 	if (prof == fun_on_x) // current_number_of_line должа начинатс с 1 
 	{ // такого плана графики лучше создавать на последих по номеру плотах т.к. мб поадобитс закрытие файлов предыдущих плотов 
@@ -376,7 +386,7 @@ void GnuPlot::SetDataOnPlot2D(int Current_number_plot, int Nx, int Ny, double dx
 	}
 }
 
-void GnuPlot::SetDataOnPlot3D(int Current_number_plot, int Nx, int Ny, int Nz, double dx, double dy, double dz, double*** fun_dimensionless, double parametr_for_dimension, int fixed_point_on_axis_x, int fixed_point_on_axis_y, int fixed_point_on_axis_z, int number_of_lines, int current_number_of_line, double moment_of_time, vector<double***> vec, Profile prof)
+void GnuPlot::SetDataOnPlot3D(int Current_number_plot, double*** fun_dimensionless, double parametr_for_dimension, int fixed_point_on_axis_x, int fixed_point_on_axis_y, int fixed_point_on_axis_z, int number_of_lines, int current_number_of_line, double moment_of_time, vector<double***> vec, Profile prof)
 {//при реализации откртыть файлы (P от x сери врем) (P от z сери врем) (T от времени)
 
 	if (prof == fun_on_x) // current_number_of_line должа начинатс с 1 
@@ -546,6 +556,66 @@ void GnuPlot::ShowDataOnPlot2D(int Current_number_plot, int number_of_lines, vec
 		str_str.pop_back();
 		str_str += "\n";
 		fprintf(gnuplotPipe[Current_number_plot], str_str.c_str(), filename[Current_number_plot].c_str());
+	}
+	fflush(gnuplotPipe[Current_number_plot]);
+}
+
+void GnuPlot::ShowDataOnPlot2D(int Current_number_plot, int Current_number_filename, int number_of_lines, vector<string> list_name_line, string name_of_file, bool png_)
+{
+	if (png_)
+	{
+		//fprintf(gnuplotPipe[Current_number_plot], "set terminal png\n", filename[Current_number_plot].c_str
+		fprintf(gnuplotPipe[Current_number_plot], "set terminal png\n");
+		// name_of_file - им файла png
+		string str_str_str = "set output \"" + name_of_file + ".png\" \n";
+		fprintf(gnuplotPipe[Current_number_plot], str_str_str.c_str());
+		str_str_str.clear();
+
+		string str_str = "plot ";
+		for (int i = 1; i <= number_of_lines; i++) // number_of_lines - число линий на плоте, 
+		{
+			string tmp_num_line;
+
+			int length = snprintf(NULL, 0, "%i", i + 1);
+			char* str = new char[length + 1];
+			snprintf(str, length + 1, "%i", i + 1);
+			for (int j = 0; j < length; j++)
+			{
+				tmp_num_line.push_back(str[j]); // номер столбца
+			}
+			// string name_line - назваие линии в легенде (например когда рисуем значение давлен от икса в различные моменты времени )
+			string name_line = list_name_line[i - 1]; // если не заработает, то ужно строки в сишные переводить .c_str(), а стринг это C++
+			str_str += "'" + filename[i - 1] + "' u 1:2 w l title \"" + name_line + "\", ";
+			//str_str += "'" + filename[Current_number_plot] + "' u 1:" + tmp_num_line + " w lp lc rgb 'red' lw 2 pt 5 title \"" + name_line + "\", ";
+		}
+		str_str.pop_back();
+		str_str.pop_back();
+		str_str += "\n";
+		fprintf(gnuplotPipe[Current_number_plot], str_str.c_str()/*, filename[Current_number_filename].c_str()*/);
+	}
+	else
+	{
+		// здесь будет только цикл по числу линий без первых 2-ух строчек выше от него
+		string str_str = "plot ";
+		for (int i = 1; i <= number_of_lines; i++) // number_of_lines - число линий на плоте, 
+		{
+			string tmp_num_line;
+
+			int length = snprintf(NULL, 0, "%i", i + 1);
+			char* str = new char[length + 1];
+			snprintf(str, length + 1, "%i", i + 1);
+			for (int j = 0; j < length; j++)
+			{
+				tmp_num_line.push_back(str[j]); // номер столбца
+			}
+			// string name_line - назваие линий в легенде 
+			string name_line = list_name_line[i - 1];
+			str_str += "'" + filename[i - 1] + "' u 1:2 w l title \"" + name_line + "\", ";
+		}
+		str_str.pop_back();
+		str_str.pop_back();
+		str_str += "\n";
+		fprintf(gnuplotPipe[Current_number_plot], str_str.c_str()/*, filename[Current_number_filename].c_str()*/);
 	}
 	fflush(gnuplotPipe[Current_number_plot]);
 }
