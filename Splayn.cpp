@@ -1,168 +1,34 @@
-#include "Splayn.h"
-#include <iostream>
 
-using namespace std;
 
-int count_splayn = 0;
-
-Polinomial pow(Polinomial pol, size_t power)
-{
-	Polinomial Result = pol;
-	for (size_t i = 1; i < power; i++) {
-		Result *= pol;
-	}
-	return Result;
-}
-
-size_t GetCoeffDeriv(size_t value, size_t power)
-{
-	size_t Result = value;
-	for (size_t i = 1; i < power; i++) {
-		Result *= (--value);
-	}
-	return Result;
-}
-
-Polinomial::Polinomial()
-{
-	this->_Coefficients = VecD(1, 0.0);
-}
-
-Polinomial::Polinomial(VecD Coefficients) : _Coefficients(Coefficients)
-{}
-
-double Polinomial::GetY(double X)
-{
-	double Result = 0;
-	for (size_t i = 0; i < this->_Coefficients.size(); i++) {
-		Result += this->_Coefficients[i] * pow(X, i);
-	}
-	return Result;
-}
-
-size_t Polinomial::GetMaxPower()
-{
-	return (this->_Coefficients.size() - 1);
-}
-
-Polinomial Polinomial::operator*(Polinomial & other)
-{
-	int size = ((this->_Coefficients.size() - 1) + (other._Coefficients.size() - 1) + 1);
-	VecD Result(size, 0.0);
-	for (size_t i = 0; i < this->_Coefficients.size(); ++i) {
-		for (size_t j = 0; j < other._Coefficients.size(); ++j) {
-			Result[i + j] += this->_Coefficients[i] * other._Coefficients[j];
-		}
-	}
-	return Polinomial(Result);
-}
-
-Polinomial Polinomial::operator*=(Polinomial other)
-{
-	int size = ((this->_Coefficients.size() - 1) + (other._Coefficients.size() - 1) + 1);
-	VecD Result(size, 0.0);
-	for (size_t i = 0; i < this->_Coefficients.size(); ++i) {
-		for (size_t j = 0; j < other._Coefficients.size(); ++j) {
-			Result[i + j] += this->_Coefficients[i] * other._Coefficients[j];
-		}
-	}
-	this->_Coefficients = Result;
-	return *this;
-}
-
-Polinomial Polinomial::operator+(Polinomial & other)
-{
-	VecD Result(this->_Coefficients), ToSum(other._Coefficients);
-	(this->_Coefficients.size() > other._Coefficients.size()) ? ToSum.resize(Result.size(), 0.0) : Result.resize(ToSum.size(), 0.0);
-	for (size_t i = 0; i < ToSum.size(); i++) {
-		Result[i] += ToSum[i];
-	}
-	return Polinomial(Result);
-}
-
-Polinomial Polinomial::operator+=(Polinomial other)
-{
-	*this = *this + other;
-	return *this;
-}
-
-Polinomial Polinomial::operator-(Polinomial & other)
-{
-	VecD Result(this->_Coefficients), ToSub(other._Coefficients);
-	(this->_Coefficients.size() > other._Coefficients.size()) ? ToSub.resize(Result.size(), 0.0) : Result.resize(ToSub.size(), 0.0);
-	for (size_t i = 0; i < ToSub.size(); i++) {
-		Result[i] -= ToSub[i];
-	}
-	return Polinomial(Result);
-}
-
-Polinomial Polinomial::operator*=(double value)
-{
-	for (size_t i = 0; i < this->_Coefficients.size(); i++) {
-		this->_Coefficients[i] *= value;
-	}
-	return *this;
-}
-
-Polinomial Polinomial::operator*(double value)
-{
-	Polinomial Result = *this;
-	for (size_t i = 0; i < this->_Coefficients.size(); i++) {
-		Result._Coefficients[i] = this->_Coefficients[i] * value;
-	}
-	return Result;
-}
-
-Polinomial Polinomial::operator/=(double value)
-{
-	for (size_t i = 0; i < this->_Coefficients.size(); i++) {
-		this->_Coefficients[i] /= value;
-	}
-	return *this;
-}
-
-VecD& Polinomial::operator[](int Index)
-{
-	return this->_Coefficients;
-}
-
-void Polinomial::OutPut()
-{
-	size_t size = this->_Coefficients.size();
-	for (size_t i = 0; i < size; i++) {
-		if (i != size - 1) {
-			std::cout << std::setprecision(15) << this->_Coefficients[i] << "*x^" << i << '+';
-		}
-		else {
-			std::cout << std::setprecision(15) << this->_Coefficients[i] << "*x^" << i;
-		}
-	}
-}
-
-Splayn::Splayn()
-{}
-
-void Splayn::SetInitialData(VecD X, size_t power)
-{
-	this->_X = X;
-	//this->_Polinoms.clear();
-	size_t NumberOfPoints = X.size();
-	size_t size = (power + 1) * (X.size() - 1);
-	VecD Diagonal(size, 1.0);
-	this->_Diagonal = Diagonal;
-	double dx = this->_X[1] - this->_X[0];// равномерная сетка (если будет неравномерная сетка, то нужно одпраить в методе способ заполнения диагонали)
-	for (size_t i = 1; i < this->_Diagonal.size(); i += 2) {
-		this->_Diagonal[i] = dx;
-	}
-}
-
-void Splayn::InterpolateFast(size_t power, double*** Tei, int fix_x, int fix_y)
+void Splayn::InterpolateFast(size_t power, double*** Tei, int fix_x, int fix_y, int fix_z, Direction dr)
 {
 	this->_Polinoms.clear();
-	for (size_t i = 0; i < this->_X.size() - 1; i++)
+	this->_Polinoms.erase(this->_Polinoms.begin(), this->_Polinoms.end());
+
+	if (dr == x)
 	{
-		this->_Polinoms.push_back(Polinomial(VecD{ Tei[fix_x][fix_y][i] + (-this->_X[i]) * ((Tei[fix_x][fix_y][i + 1] - Tei[fix_x][fix_y][i]) / (this->_X[1] - this->_X[0])), ((Tei[fix_x][fix_y][i + 1] - Tei[fix_x][fix_y][i]) / (this->_X[1] - this->_X[0])) }));
+		for (size_t i = 0; i < this->_X.size() - 1; i++)
+		{
+			this->_Polinoms.push_back(Polinomial(VecD{ Tei[i][fix_y][fix_z] + (-this->_X[i]) * ((Tei[i + 1][fix_y][fix_z] - Tei[i][fix_y][fix_z]) / (this->_X[1] - this->_X[0])), ((Tei[i + 1][fix_y][fix_z] - Tei[i][fix_y][fix_z]) / (this->_X[1] - this->_X[0])) }));
+		}
 	}
+
+	if (dr == y)
+	{
+		for (size_t i = 0; i < this->_Y.size() - 1; i++)
+		{
+			this->_Polinoms.push_back(Polinomial(VecD{ Tei[fix_x][i][fix_z] + (-this->_Y[i]) * ((Tei[fix_x][i + 1][fix_z] - Tei[fix_x][i][fix_z]) / (this->_Y[1] - this->_Y[0])), ((Tei[fix_x][i + 1][fix_z] - Tei[fix_x][i][fix_z]) / (this->_Y[1] - this->_Y[0])) }));
+		}
+	}
+
+	if (dr == z)
+	{
+		for (size_t i = 0; i < this->_Z.size() - 1; i++)
+		{
+			this->_Polinoms.push_back(Polinomial(VecD{ Tei[fix_x][fix_y][i] + (-this->_Z[i]) * ((Tei[fix_x][fix_y][i + 1] - Tei[fix_x][fix_y][i]) / (this->_Z[1] - this->_Z[0])), ((Tei[fix_x][fix_y][i + 1] - Tei[fix_x][fix_y][i]) / (this->_Z[1] - this->_Z[0])) }));
+		}
+	}
+
 }
 
 void Splayn::Interpolate(VecD X, VecD Y, size_t power)
@@ -324,13 +190,13 @@ void Splayn::Calculation_Interpolation(string fiename)
 		}
 	}
 	in.close();
-//	cout << " size = " << X.size() << endl;
-	//for (int i = 0; i < new_points.size(); i++)
-	//{
-	//	X.push_back(new_points[i].x);
-	//	Y.push_back(new_points[i].y);
-	//}
-	//system("pause");
+	//	cout << " size = " << X.size() << endl;
+		//for (int i = 0; i < new_points.size(); i++)
+		//{
+		//	X.push_back(new_points[i].x);
+		//	Y.push_back(new_points[i].y);
+		//}
+		//system("pause");
 	this->Interpolate(X, Y, 1);
 }
 
