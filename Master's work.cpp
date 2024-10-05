@@ -103,6 +103,21 @@ string ConvertNumToStringdouble(double i)
 	return tmp_num_line;
 }
 
+string ConvertNumToString(int i)
+{
+	string tmp_num_line;
+
+	int length = snprintf(NULL, 0, "%i", i);
+	char* str = new char[length + 1];
+	snprintf(str, length + 1, "%i", i);
+	for (int j = 0; j < length; j++)
+	{
+		tmp_num_line.push_back(str[j]); // номер столбца
+	}
+
+	return tmp_num_line;
+}
+
 struct Point3D // структура необходимая для определение точек, где произошел разрыв
 {
 	Point3D(int index_x, int index_y, int index_z) : index_x{ index_x }, index_y{ index_y }, index_z{ index_z } {}
@@ -607,6 +622,51 @@ double Dependence_C_l_on_T(Metal mt, double T_l)
 	return C_l;
 }
 
+void MyCreateFile(int number_of_files_, vector<string> filename)
+{
+	vector<ofstream> file;
+	file.reserve(number_of_files_);
+
+	for (int i = 0; i < number_of_files_; i++)
+	{
+		file.emplace_back(ofstream{ filename[i] });
+	}
+}
+
+void MyCreateFile_Animate(int number_of_plots, int count_frame_, int start_number_plot, int start_frame)
+{
+	vector<ofstream> file;
+	file.reserve(number_of_plots * count_frame_);
+	for (int i = start_number_plot; i < number_of_plots + start_number_plot; ++i)// цикл для создания системных файлов и файлов для данных для Анимации
+	{
+		string type_plot_Gif;
+		string file_name;
+		int length = snprintf(NULL, 0, "%i", i);
+		char* str = new char[length + 1];
+		snprintf(str, length + 1, "%i", i);
+		for (int j = 0; j < length; j++)
+		{
+			type_plot_Gif.push_back(str[j]);
+		}
+
+		for (int j = start_frame; j < count_frame_ + start_frame; ++j)
+		{
+			string number_frame_Gif /*= "GIF"*/;
+
+			int length = snprintf(NULL, 0, "%i", j);
+			char* str = new char[length + 1];
+			snprintf(str, length + 1, "%i", j);
+			for (int k = 0; k < length; k++)
+			{
+				number_frame_Gif.push_back(str[k]);
+			}
+
+			file_name = "Data_Gif" + type_plot_Gif + " + " + number_frame_Gif + ".txt";
+			file.emplace_back(ofstream{ file_name });
+		}
+	}
+}
+
 vector<double> proced(double*** T, int fixNx, int fixNy, int totalNzacoust, int totalNzheat)
 {
 	vector<double> newT;
@@ -677,47 +737,30 @@ void GRU2(double*** b2x, double*** b2y, double*** b2z, int& Nx, int& Ny, int& Nz
 	}
 }
 
-void GaussBeam(double*** F, int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double& dt, int& n, double& beta)
+double GaussBeam(int& i, int& j, int& k, int& Nx, int& Ny, double& dx, double& dy, double& dz, double& dt, int& n, double& beta)
 {
-	for (int i = 0; i < Nx; i++)
-	{
-		for (int j = 0; j < Ny; j++)
-		{
-			for (int k = 0; k < Nz; k++)
-			{
-				F[i][j][k] = exp(-dx * dx * (i - Nx / 2) * (i - Nx / 2)) * exp(-dy * dy * (j - Ny / 2) * (j - Ny / 2)) * exp(-dz * k) * dt * n * exp(-beta * dt * n);
-			}
-		}
-	}
+	return exp(-dx * dx * (i - Nx / 2) * (i - Nx / 2)) * exp(-dy * dy * (j - Ny / 2) * (j - Ny / 2)) * exp(-dz * k) * dt * n * exp(-beta * dt * n);
 }
 
-void VortexBeam(double*** F, int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double& dt, int& n, double& beta, int m)
+double VortexBeam(int& i, int& j, int& k, int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double& dt, int& n, double& beta, int m)
 {
 	double h11 = 0, h12 = 0, hf1 = 0;
-	for (int i = 0; i < Nx; i++)
+
+	h11 = dx * (i - Nx / 2);
+	h12 = dy * (j - Ny / 2);
+	hf1 = atan(h12 / h11);
+	if (h11 == 0 && h12 == 0)
 	{
-		for (int j = 0; j < Ny; j++)
-		{
-			for (int k = 0; k < Nz; k++)
-			{
-				h11 = dx * (i - Nx / 2);
-				h12 = dy * (j - Ny / 2);
-				hf1 = atan(h12 / h11);
-				if (h11 == 0 && h12 == 0)
-				{
-					hf1 = 0;
-				}
-
-				if (h11 == 0)
-				{
-					hf1 = 0;
-				}
-
-				F[i][j][k] = (pow(sqrt(pow(h11 * h11 + h12 * h12, abs(m))) * cos(m * hf1) * (exp(-dx * dx * (i - Nx / 2) * (i - Nx / 2)) * exp(-dy * dy * (j - Ny / 2) * (j - Ny / 2))), 2) +
-					pow(sqrt(pow(h11 * h11 + h12 * h12, abs(m))) * sin(m * hf1) * (exp(-dx * dx * (i - Nx / 2) * (i - Nx / 2)) * exp(-dy * dy * (j - Ny / 2) * (j - Ny / 2))), 2)) * exp(-dz * k) * dt * n * exp(-beta * dt * n);
-			}
-		}
+		hf1 = 0;
 	}
+
+	if (h11 == 0)
+	{
+		hf1 = 0;
+	}
+
+	return (pow(sqrt(pow(h11 * h11 + h12 * h12, abs(m))) * cos(m * hf1) * (exp(-dx * dx * (i - Nx / 2) * (i - Nx / 2)) * exp(-dy * dy * (j - Ny / 2) * (j - Ny / 2))), 2) +
+		pow(sqrt(pow(h11 * h11 + h12 * h12, abs(m))) * sin(m * hf1) * (exp(-dx * dx * (i - Nx / 2) * (i - Nx / 2)) * exp(-dy * dy * (j - Ny / 2) * (j - Ny / 2))), 2)) * exp(-dz * k) * dt * n * exp(-beta * dt * n);
 }
 
 void Calculation00(Metal mt, Parametrs param, Splayn spl_C_e_on_T, Splayn spl_G_e_on_T, /*double*** F,*/ TypeBeam tbeam, double*** tmpe0, double*** tmpe1, double*** tmpi0, double*** tmpi1, int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double& dt, /*double& A1,*/ double& A2, /*double& B1, double& CC1, double& CC2, */int& n, double& beta)
@@ -747,7 +790,17 @@ void Calculation00(Metal mt, Parametrs param, Splayn spl_C_e_on_T, Splayn spl_G_
 				A111 = (Dependence_k_e_on_T(mt, param.T00 * tmpe0[i][j][k]) / (100.)) * param.t0 / ((spl_C_e_on_T.GetY(param.T00 * tmpe0[i][j][k]) / (100. * 100. * 100.)) * param.r0 * param.r0);
 				B111 = param.kabs * param.P0 * param.t0 * beta / ((spl_C_e_on_T.GetY(param.T00 * tmpe0[i][j][k]) / (100. * 100. * 100.)) * param.T00);
 				A1i111 = (Dependence_k_e_on_T(mt, 300.) / (100. * 100.)) * param.t0 / ((Dependence_C_l_on_T(mt, param.T00 * tmpi0[i][j][k]) / (100. * 100. * 100.)) * param.r0 * param.r0);
-				FFF = exp(-dx * dx * (i - Nx / 2) * (i - Nx / 2)) * exp(-dy * dy * (j - Ny / 2) * (j - Ny / 2)) * exp(-dz * k) * dt * n * exp(-beta * dt * n);
+				if (tbeam == Gauss)
+				{
+					FFF = GaussBeam(i, j, k, Nx, Ny, dx, dy, dz, dt, n, beta);
+				}
+
+				if (tbeam == Vortex)
+				{
+					FFF = VortexBeam(i, j, k, Nx, Ny, Nz, dx, dy, dz, dt, n, beta, 1);
+				}
+
+				// exp(-dx * dx * (i - Nx / 2) * (i - Nx / 2)) * exp(-dy * dy * (j - Ny / 2) * (j - Ny / 2)) * exp(-dz * k) * dt * n * exp(-beta * dt * n);
 
 				tmpe1[i][j][k] = tmpe0[i][j][k] +
 					dt * A111 * ((tmpe0[i + 1][j][k] + tmpe0[i - 1][j][k] - 2 * tmpe0[i][j][k]) / (dx * dx) + (tmpe0[i][j + 1][k] + tmpe0[i][j - 1][k] - 2 * tmpe0[i][j][k]) / (dy * dy) + A2 * (tmpe0[i][j][k - 1] + tmpe0[i][j][k + 1] - 2 * tmpe0[i][j][k]) / (dz * dz))
@@ -796,7 +849,7 @@ void Calculation00(Metal mt, Parametrs param, Splayn spl_C_e_on_T, Splayn spl_G_
 	}
 }
 
-void fun2(int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double& dt, double*** tmpe0, double*** tmpe1, double*** tmpe2, double*** tmpi0, double*** tmpi1, double*** tmpi2, double& A2,/*double*** A1, double*** A1i, double& A2, double*** B1, double*** CC1, double*** CC2,*/ /*double*** F,*/ /*double*** copy_tmpe1, double*** copy_tmpi1,*/ int& begin, int& end, Parametrs & param, vector<Melting> & Melt_metal, Metal mt, /*double*** Ci, double*** gamma,*/ bool& melting, Splayn & spl_G_e_on_T, Splayn spl_C_e_on_T, double beta, int n, Splayn spl_C_l_on_T)
+void fun2(int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double& dt, double*** tmpe0, double*** tmpe1, double*** tmpe2, double*** tmpi0, double*** tmpi1, double*** tmpi2, double& A2,/*double*** A1, double*** A1i, double& A2, double*** B1, double*** CC1, double*** CC2,*/ /*double*** F,*/ /*double*** copy_tmpe1, double*** copy_tmpi1,*/ int& begin, int& end, Parametrs & param, vector<Melting> & Melt_metal, Metal mt, /*double*** Ci, double*** gamma,*/ bool& melting, Splayn & spl_G_e_on_T, Splayn spl_C_e_on_T, double beta, int n, Splayn spl_C_l_on_T, TypeBeam tbeam)
 {
 	double A111 = 0, B111 = 0, A1i111 = 0, CC1111 = 0, CC2111 = 0, FFF = 0;
 	for (int k = begin; k < end; k++)
@@ -813,7 +866,17 @@ void fun2(int& Nx, int& Ny, int& Nz, double& dx, double& dy, double& dz, double&
 				B111 = (param.kabs * param.P0 * param.t0 * beta / ((spl_C_e_on_T.GetY(param.T00 * tmpe1[i][j][k]) / (100. * 100. * 100.)) * param.T00));
 				CC1111 = ((spl_G_e_on_T.GetY(param.T00 * tmpe1[i][j][k]) / (100. * 100. * 100.)) * param.t0 / ((spl_C_e_on_T.GetY(param.T00 * tmpe1[i][j][k]) / (100. * 100. * 100.))));
 				CC2111 = ((spl_G_e_on_T.GetY(param.T00 * tmpe1[i][j][k]) / (100. * 100. * 100.)) * param.t0 / ((Dependence_C_l_on_T(mt, param.T00 * tmpi1[i][j][k]) / (100. * 100. * 100.))));
-				FFF = exp(-dx * dx * (i - Nx / 2) * (i - Nx / 2)) * exp(-dy * dy * (j - Ny / 2) * (j - Ny / 2)) * exp(-dz * k) * dt * n * exp(-beta * dt * n);
+				if (tbeam == Gauss)
+				{
+					FFF = GaussBeam(i, j, k, Nx, Ny, dx, dy, dz, dt, n, beta);
+				}
+
+				if (tbeam == Vortex)
+				{
+					FFF = VortexBeam(i, j, k, Nx, Ny, Nz, dx, dy, dz, dt, n, beta, 1);
+				}
+
+				// exp(-dx * dx * (i - Nx / 2) * (i - Nx / 2)) * exp(-dy * dy * (j - Ny / 2) * (j - Ny / 2)) * exp(-dz * k) * dt * n * exp(-beta * dt * n);
 
 				tmpe2[i][j][k] = tmpe0[i][j][k] * (1 - 2 * dt * /*A1[i][j][k]*/ A111 / (dx * dx) - 2 * dt * /*A1[i][j][k]*/ A111 / (dy * dy) - 2 * dt * /*A1[i][j][k]*/ A111 * A2 / (dz * dz))
 					+ 2 * dt */* A1[i][j][k]*/ A111 * ((tmpe1[i + 1][j][k] + tmpe1[i - 1][j][k]) / (dx * dx) + (tmpe1[i][j + 1][k] + tmpe1[i][j - 1][k]) / (dy * dy) + A2 * (tmpe1[i][j][k - 1] + tmpe1[i][j][k + 1]) / (dz * dz))
@@ -941,16 +1004,16 @@ void Calculation0(Metal mt, Parametrs & param, Splayn & spl_C_e_on_T, Splayn & s
 
 	//fun2(ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, ref(A2), /* A1, A1i, ref(A2), B1, CC1, CC2, F,*/ /*copy_tmpe1, copy_tmpi1,*/ ref(new_interv[0].begin), ref(new_interv[0].end), ref(param), ref(Melt_metal), mt, /*Ci, gamma,*/ ref(melting), ref(spl_G_e_on_T), spl_C_e_on_T, beta, n);
 
-	std::thread t26(fun2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, ref(A2), /* A1, A1i, ref(A2), B1, CC1, CC2, F,*/ /*copy_tmpe1, copy_tmpi1,*/ ref(new_interv[0].begin), ref(new_interv[0].end), ref(param), ref(Melt_metal), mt, /*Ci, gamma,*/ ref(melting), ref(spl_G_e_on_T), spl_C_e_on_T, beta, n, spl_C_l_on_T);
-	std::thread t27(fun2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, ref(A2), /* A1, A1i, ref(A2), B1, CC1, CC2,*/ /*F,*//*copy_tmpe1, copy_tmpi1,*/ ref(new_interv[1].begin), ref(new_interv[1].end), ref(param), ref(Melt_metal), mt, /*Ci, gamma,*/ ref(melting), ref(spl_G_e_on_T), spl_C_e_on_T, beta, n, spl_C_l_on_T);
-	std::thread t28(fun2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, ref(A2), /* A1, A1i, ref(A2), B1, CC1, CC2,*//* F,*/ /*copy_tmpe1, copy_tmpi1,*/ ref(new_interv[2].begin), ref(new_interv[2].end), ref(param), ref(Melt_metal), mt, /*Ci, gamma,*/ ref(melting), ref(spl_G_e_on_T), spl_C_e_on_T, beta, n, spl_C_l_on_T);
-	std::thread t29(fun2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, ref(A2), /* A1, A1i, ref(A2), B1, CC1, CC2,*//* F,*/ /*copy_tmpe1, copy_tmpi1,*/ ref(new_interv[3].begin), ref(new_interv[3].end), ref(param), ref(Melt_metal), mt, /*Ci, gamma,*/ ref(melting), ref(spl_G_e_on_T), spl_C_e_on_T, beta, n, spl_C_l_on_T);
-	std::thread t30(fun2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, ref(A2), /* A1, A1i, ref(A2), B1, CC1, CC2,*//* F,*/ /*copy_tmpe1, copy_tmpi1,*/ ref(new_interv[4].begin), ref(new_interv[4].end), ref(param), ref(Melt_metal), mt, /*Ci, gamma,*/ ref(melting), ref(spl_G_e_on_T), spl_C_e_on_T, beta, n, spl_C_l_on_T);
-	std::thread t31(fun2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, ref(A2), /* A1, A1i, ref(A2), B1, CC1, CC2,*/ /*F,*/ /*copy_tmpe1, copy_tmpi1,*/ ref(new_interv[5].begin), ref(new_interv[5].end), ref(param), ref(Melt_metal), mt, /*Ci, gamma,*/ ref(melting), ref(spl_G_e_on_T), spl_C_e_on_T, beta, n, spl_C_l_on_T);
-	std::thread t32(fun2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, ref(A2), /* A1, A1i, ref(A2), B1, CC1, CC2,*/ /*F, *//*copy_tmpe1, copy_tmpi1,*/ ref(new_interv[6].begin), ref(new_interv[6].end), ref(param), ref(Melt_metal), mt, /*Ci, gamma,*/ ref(melting), ref(spl_G_e_on_T), spl_C_e_on_T, beta, n, spl_C_l_on_T);
-	std::thread t33(fun2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, ref(A2), /* A1, A1i, ref(A2), B1, CC1, CC2,*//* F,*/ /*copy_tmpe1, copy_tmpi1,*/ ref(new_interv[7].begin), ref(new_interv[7].end), ref(param), ref(Melt_metal), mt, /*Ci, gamma,*/ ref(melting), ref(spl_G_e_on_T), spl_C_e_on_T, beta, n, spl_C_l_on_T);
-	std::thread t34(fun2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, ref(A2), /* A1, A1i, ref(A2), B1, CC1, CC2,*/ /*F,*/ /*copy_tmpe1, copy_tmpi1,*/ ref(new_interv[8].begin), ref(new_interv[8].end), ref(param), ref(Melt_metal), mt, /*Ci, gamma,*/ ref(melting), ref(spl_G_e_on_T), spl_C_e_on_T, beta, n, spl_C_l_on_T);
-	std::thread t35(fun2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, ref(A2), /* A1, A1i, ref(A2), B1, CC1, CC2,*/  /*F, *//*copy_tmpe1, copy_tmpi1,*/ ref(new_interv[9].begin), ref(new_interv[9].end), ref(param), ref(Melt_metal), mt,/* Ci, gamma,*/ ref(melting), ref(spl_G_e_on_T), spl_C_e_on_T, beta, n, spl_C_l_on_T);
+	std::thread t26(fun2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, ref(A2), /* A1, A1i, ref(A2), B1, CC1, CC2, F,*/ /*copy_tmpe1, copy_tmpi1,*/ ref(new_interv[0].begin), ref(new_interv[0].end), ref(param), ref(Melt_metal), mt, /*Ci, gamma,*/ ref(melting), ref(spl_G_e_on_T), spl_C_e_on_T, beta, n, spl_C_l_on_T, tbeam);
+	std::thread t27(fun2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, ref(A2), /* A1, A1i, ref(A2), B1, CC1, CC2,*/ /*F,*//*copy_tmpe1, copy_tmpi1,*/ ref(new_interv[1].begin), ref(new_interv[1].end), ref(param), ref(Melt_metal), mt, /*Ci, gamma,*/ ref(melting), ref(spl_G_e_on_T), spl_C_e_on_T, beta, n, spl_C_l_on_T, tbeam);
+	std::thread t28(fun2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, ref(A2), /* A1, A1i, ref(A2), B1, CC1, CC2,*//* F,*/ /*copy_tmpe1, copy_tmpi1,*/ ref(new_interv[2].begin), ref(new_interv[2].end), ref(param), ref(Melt_metal), mt, /*Ci, gamma,*/ ref(melting), ref(spl_G_e_on_T), spl_C_e_on_T, beta, n, spl_C_l_on_T, tbeam);
+	std::thread t29(fun2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, ref(A2), /* A1, A1i, ref(A2), B1, CC1, CC2,*//* F,*/ /*copy_tmpe1, copy_tmpi1,*/ ref(new_interv[3].begin), ref(new_interv[3].end), ref(param), ref(Melt_metal), mt, /*Ci, gamma,*/ ref(melting), ref(spl_G_e_on_T), spl_C_e_on_T, beta, n, spl_C_l_on_T, tbeam);
+	std::thread t30(fun2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, ref(A2), /* A1, A1i, ref(A2), B1, CC1, CC2,*//* F,*/ /*copy_tmpe1, copy_tmpi1,*/ ref(new_interv[4].begin), ref(new_interv[4].end), ref(param), ref(Melt_metal), mt, /*Ci, gamma,*/ ref(melting), ref(spl_G_e_on_T), spl_C_e_on_T, beta, n, spl_C_l_on_T, tbeam);
+	std::thread t31(fun2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, ref(A2), /* A1, A1i, ref(A2), B1, CC1, CC2,*/ /*F,*/ /*copy_tmpe1, copy_tmpi1,*/ ref(new_interv[5].begin), ref(new_interv[5].end), ref(param), ref(Melt_metal), mt, /*Ci, gamma,*/ ref(melting), ref(spl_G_e_on_T), spl_C_e_on_T, beta, n, spl_C_l_on_T, tbeam);
+	std::thread t32(fun2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, ref(A2), /* A1, A1i, ref(A2), B1, CC1, CC2,*/ /*F, *//*copy_tmpe1, copy_tmpi1,*/ ref(new_interv[6].begin), ref(new_interv[6].end), ref(param), ref(Melt_metal), mt, /*Ci, gamma,*/ ref(melting), ref(spl_G_e_on_T), spl_C_e_on_T, beta, n, spl_C_l_on_T, tbeam);
+	std::thread t33(fun2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, ref(A2), /* A1, A1i, ref(A2), B1, CC1, CC2,*//* F,*/ /*copy_tmpe1, copy_tmpi1,*/ ref(new_interv[7].begin), ref(new_interv[7].end), ref(param), ref(Melt_metal), mt, /*Ci, gamma,*/ ref(melting), ref(spl_G_e_on_T), spl_C_e_on_T, beta, n, spl_C_l_on_T, tbeam);
+	std::thread t34(fun2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, ref(A2), /* A1, A1i, ref(A2), B1, CC1, CC2,*/ /*F,*/ /*copy_tmpe1, copy_tmpi1,*/ ref(new_interv[8].begin), ref(new_interv[8].end), ref(param), ref(Melt_metal), mt, /*Ci, gamma,*/ ref(melting), ref(spl_G_e_on_T), spl_C_e_on_T, beta, n, spl_C_l_on_T, tbeam);
+	std::thread t35(fun2, ref(Nx), ref(Ny), ref(Nz), ref(dx), ref(dy), ref(dz), ref(dt), tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, ref(A2), /* A1, A1i, ref(A2), B1, CC1, CC2,*/  /*F, *//*copy_tmpe1, copy_tmpi1,*/ ref(new_interv[9].begin), ref(new_interv[9].end), ref(param), ref(Melt_metal), mt,/* Ci, gamma,*/ ref(melting), ref(spl_G_e_on_T), spl_C_e_on_T, beta, n, spl_C_l_on_T, tbeam);
 
 	t26.join();
 	t27.join();
@@ -2049,7 +2112,7 @@ void QuasiGrid(double& r0, double& kabs, double& z0, double& xy0, vector <double
 	cout << endl << endl;
 }
 
-void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double CeCe, double CiCi, double gammagamma, double g_e, double g_i, double u00, double tptp, double P00, double*** V00,double*** V1, double*** V2, double*** a1y, double*** a2y, double*** a1z, double*** a2z, double*** a2x, double*** a1x, double*** b1x, double*** b2x, double*** b1y, double*** b2y, double*** b1z, double*** b2z, double*** e2, double*** e1, double*** tmpe0, double*** tmpe1, double*** tmpe2, double*** tmpi0, double*** tmpi1, double*** tmpi2, int Nx_heat, int  Ny_heat, int  Nz_heat, int  Nx_acoustic, int  Ny_acoustic, int  Nz_acoustic, Splayn spl_C_l_on_T, double*** Te_acoustic, double*** Ti_acoustic, double*** Ti_old_xy_new_z, double*** Te_old_xy_new_z, double*** Ti_old_y_new_xz, double*** Te_old_y_new_xz, string current_namefile)    // davlenie, gorizontal'naja skorost', vertikal'naja skorost', temperatura
+void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double CeCe, double CiCi, double gammagamma, double g_e, double g_i, double u00, double tptp, double P00, double*** V00,double*** V1, double*** V2, double*** a1y, double*** a2y, double*** a1z, double*** a2z, double*** a2x, double*** a1x, double*** b1x, double*** b2x, double*** b1y, double*** b2y, double*** b1z, double*** b2z, double*** e2, double*** e1, double*** tmpe0, double*** tmpe1, double*** tmpe2, double*** tmpi0, double*** tmpi1, double*** tmpi2, int Nx_heat, int  Ny_heat, int  Nz_heat, int  Nx_acoustic, int  Ny_acoustic, int  Nz_acoustic, Splayn spl_C_l_on_T, double*** Te_acoustic, double*** Ti_acoustic, double*** Ti_old_xy_new_z, double*** Te_old_xy_new_z, double*** Ti_old_y_new_xz, double*** Te_old_y_new_xz, double*** massive_melting_tmp1, double***  massive_melting_tmp2, double***  massive_melting_null, string current_namefile)    // davlenie, gorizontal'naja skorost', vertikal'naja skorost', temperatura
 {
 	// parametrs of laser and area
 
@@ -2268,9 +2331,10 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 		cout << i << " Coordinate z (nm) heat =  " << 1e+4 * dz_acoustic / kabs * 1000 * i << endl;
 	}*/
 
-	//cout << dx << "  " << dy << "  " << dz << endl;
-	//  dz:=0.25;
-	double dt = 2e-4;
+	// tt = n * dt * t0 * 1e+15; // vremja v fs
+
+	double dt = 1. / (t0 * 1e+15);// 2e-4;
+	cout << " dt = " << dt << endl;
 	int n = 1;
 	double tt = 0;
 	// 32 переменные double
@@ -2293,7 +2357,6 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 	{
 		Y.push_back(i * dy_heat); // если будет неравномерная сетка, то нужно одпраить в методе способ заполнения диагонали
 	}
-
 
 	for (int i = 0; i < Nz_heat; i++)//dz_heat
 	{
@@ -2348,6 +2411,9 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 				V2[i][j][k] = V0;
 				V1[i][j][k] = V0;
 				V00[i][j][k] = V0;
+				massive_melting_tmp1[i][j][k] = 1e-16; 
+				massive_melting_tmp2[i][j][k] = 1e-16;  
+				massive_melting_null[i][j][k] = 1e-16;
 			}
 		}
 	}
@@ -2394,7 +2460,10 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 	int count_of_lines = 9;
 	int npxzt = 1;
 	int current_number_line_melting = 1;
-	GnuPlot plt(number_plots); // объект хранит 5 плотиков
+	int current_time_frame = 0; // номер кадра 
+	int total_time_frame = 5;// 2000;
+	//GnuPlot plt(number_plots); // объект хранит 5 плотиков (объект на общий случай  без записи данных)
+	GnuPlot plt(number_plots, total_time_frame); // с записью в файлы
 	system("pause");
 	plt.SetParametrs2D(0, 3, 3, "Te,Ti", "x,mkm", "Te,Ti,P");
 	plt.SetParametrs2D(1, 2, 3, "Te,Ti", "time,fs", "Te,Ti (K)");
@@ -2418,8 +2487,11 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 	plt.SetParametrs2D(11, 11, 3, "Temperature T(z)", "z,mkm", "Ti, K");
 	plt.SetParametrs2D(12, 11, 3, "Temperature T(x)", "x,mkm", "Ti, K");
 
-	plt.SetParametrsOnPlotColor(13, "Melting zone (xz)", "z,mkm", "x,mkm", (1e+4* dz_heat* Nz_heat / kabs), (1e+4* r0* dx_heat* Nx_heat));
-	plt.SetParametrsOnPlotColor(14, "Melting zone (xy)", "y,mkm", "x,mkm", (1e+4* r0* dy_heat* Ny_heat), (1e+4* r0* dx_heat* Nx_heat));
+	/*plt.SetParametrsOnPlotColor(13, "Melting zone (xz)", "z,mkm", "x,mkm", (1e+4* dz_heat* Nz_heat / kabs), (1e+4* r0* dx_heat* Nx_heat));
+	plt.SetParametrsOnPlotColor(14, "Melting zone (xy)", "y,mkm", "x,mkm", (1e+4* r0* dy_heat* Ny_heat), (1e+4* r0* dx_heat* Nx_heat));*/
+	plt.SetParametrsOnPlotColor(13, "Melting zone (xz)", "z,mkm", "x,mkm", (1e+4* dz_acoustic* Nz_acoustic / kabs), (1e+4* r0* dx_acoustic* Nx_acoustic));
+	plt.SetParametrsOnPlotColor(14, "Melting zone (xy)", "y,mkm", "x,mkm", (1e+4* r0* dy_acoustic* Ny_acoustic), (1e+4* r0* dx_acoustic* Nx_acoustic));
+
 	plt.SetParametrs2D(15, 2, 3, "Te,Ti", "x,mkm", "Te,Ti (K)");
 	plt.SetParametrs2D(16, 2, 3, "Te,Ti", "z,mkm", "Te,Ti (K)");
 
@@ -2428,6 +2500,9 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 	plt.SetParametrs2D(17, 1, 3, "P", "time,fs", "P (bar)");
 	plt.SetParametrs2D(18, 1, 3, "P", "x,mkm", "P (bar)");
 	plt.SetParametrs2D(19, 1, 3, "P", "z,mkm", "P (bar)");
+
+	plt.SetParametrsOnPlotColor(20, "Preasure zone (xz)", "z,mkm", "x,mkm", (1e+4* dz_acoustic* Nz_acoustic / kabs), (1e+4* r0* dx_acoustic* Nx_acoustic));
+	plt.SetParametrsOnPlotColor(21, "Preasure zone (xy)", "y,mkm", "x,mkm", (1e+4* r0* dy_acoustic* Ny_acoustic), (1e+4* r0* dx_acoustic* Nx_acoustic));
 
 	/*plt.SetParametrs2D(20, 1, 3, "Pacoustic", "time,fs", "P (bar)");
 	plt.SetParametrs2D(21, 1, 3, "Pacoustic", "x,mkm", "P (bar)");
@@ -2473,12 +2548,12 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 	vector<string> TeTiTfs = { "Te","Ti" };
 	vector<string> Pfs = { "P" };
 	vector<string> TiTfs = { "Ti" };
-	vector<string> Melting_zone = { "Melting_zone" };
+	//vector<string> Melting_zone = { "Melting_zone" };
 	vector<string> Legenda_melting_tmp;
 	vector<string> Legenda;
 	vector<string> FilesForWritting;  // имена файлов куда запишутся поля темепратур и т.д
 	vector<string> FilesForReading;
-	vector<int> for_close_and_open = { 2, 3, 4, 5, 6, 7, 13, 14, 15, 16, 18, 19, 21/*, 22, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34 */ };
+	vector<int> for_close_and_open = { 2, 3, 4, 5, 6, 7, 13, 14, 15, 16, 18, 19, 20, 21/*, 22, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34 */ };
 	vector<int> for_close_and_open_ac = { 0, 1, 2 };
 	string namefile;
 	string fileoflistnamefiles = "List.txt";
@@ -2490,6 +2565,43 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 	vector<Point3D>::iterator it_z, it_x;
 	points_rupture.clear();
 	points_rupture.erase(points_rupture.begin(), points_rupture.end());
+
+	vector<string> list_namefile;// = { "P1.txt", "P2.txt", "P3.txt", "P4.txt", "P5.txt" };//?????
+	//MyCreateFile(list_namefile.size(), list_namefile);//????
+	vector<double> moments_time; // хранит моменты времени
+	vector<int> moments_fix_time_anim;
+	//int count_time = 1;
+	for (int i = 1; i <= 3000/*100000*/; i++) // сетка времени
+	{
+		tt = i * dt * t0 * 1e+15; // vremja v fs
+		moments_time.push_back(tt);
+		//list_namefile.push_back()
+	}
+
+	for (int i = 800; i <= 2800/*100000*/; i++) // моменты времени для отрисовки и анимации
+	//for (int i = 2; i < 12/*100000*/; i+=2) // моменты времени для отрисовки и анимации
+	{// аналог n
+		moments_fix_time_anim.push_back(i);
+	}
+
+	//MyCreateFile(list_namefile.size(), list_namefile);
+	vector<double>::iterator it_time,  it_last_time; // хранит моменты времени
+	vector<int>::iterator it_fix_time_anim;
+	it_last_time = moments_time.end() - 1;
+	it_fix_time_anim = moments_fix_time_anim.begin();
+	cout << endl << endl << " last time = " << (*it_last_time) << endl;
+
+	cout << endl << endl << " first fix time = " << (*(moments_fix_time_anim.begin())) << endl;
+	cout << endl << endl << " last fix time = " << (*(moments_fix_time_anim.end() - 1)) << endl;
+
+	cout << endl << endl;
+	//cout.precision(10);
+	//for (it_time = moments_time.begin(); it_time != moments_time.end(); it_time++)
+	{
+	//	cout << (*it_time) << endl;
+	}
+	//cout << endl << endl;
+	//system("pause");
 
 	string depth2 = current_namefile;// current_namefile;//"Depth2.txt"; // I0 = 0.25e+10
 	//string depth23 = "Depth23.txt"; // I0 = 0.275e+10
@@ -2522,6 +2634,7 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 	bool change_time_step = true;
 	cout << endl << endl;
 
+	it_time = moments_time.begin();
 	do // цикл по времени
 	{
 		for (int i = 0; i < Nx_acoustic; i++)// циклы по узлам акустики (определяем, где произошел разрыв металла)
@@ -2602,47 +2715,54 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 			fout_depth2 << level_depth << endl;
 		}
 
-		plt.SetDataOnPlot3D(1, NULL, T00, Nx_heat / 2, Ny_heat / 2, 1, 2, 0, tt, TeTi, fun_on_t);
-		plt.SetDataOnPlot3D(10, NULL, T00, Nx_heat / 2, Ny_heat / 2, 1, 1, 0, tt, Ti, fun_on_t);
+		plt.SetDataOnPlot3D(1, 0, NULL, T00, Nx_heat / 2, Ny_heat / 2, 1, 2, 0, tt, TeTi, fun_on_t);
+		plt.SetDataOnPlot3D(10, 0, NULL, T00, Nx_heat / 2, Ny_heat / 2, 1, 1, 0, tt, Ti, fun_on_t);
 		/*plt.SetDataOnPlot3D(17, Nx, Ny, Nz, 1e+4* dx* r0, 1e+4* dy* r0, 1e+4* dz / kabs, NULL, p0v, Nx / 2, Ny / 2, 1, 1, 0, tt, P, fun_on_t);
 		plt.SetDataOnPlot3D(20, Nx, Ny, Nz, 1e+4* dx* r0, 1e+4* dy* r0, 1e+4* dz / kabs, NULL, 1., Nx / 2, Ny / 2, 1, 1, 0, tt, Pac, fun_on_t);
 		plt.SetDataOnPlot3D(23, Nx, Ny, Nz, 1e+4* dx* r0, 1e+4* dy* r0, 1e+4* dz / kabs, NULL, p0v, Nx / 2, Ny / 2, 1, 1, 0, tt, PTTi, fun_on_t);
 		plt.SetDataOnPlot3D(26, Nx, Ny, Nz, 1e+4* dx* r0, 1e+4* dy* r0, 1e+4* dz / kabs, NULL, p0v, Nx / 2, Ny / 2, 1, 1, 0, tt, PTTe, fun_on_t);*/
-		plt.SetDataOnPlot3D(17, NULL, p0v, Nx_acoustic / 2, Ny_acoustic / 2, 0, 1, 0, tt, P, fun_on_t);
+		plt.SetDataOnPlot3D(17, 0, NULL, p0v, Nx_acoustic / 2, Ny_acoustic / 2, 0, 1, 0, tt, P, fun_on_t);
 		/*plt.SetDataOnPlot3D(20, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4 * dx_acoustic * r0, 1e+4 * dy_acoustic * r0, 1e+4 * dz_acoustic / kabs, NULL, p0v, Nx_acoustic / 2, Ny_acoustic / 2, 0, 1, 0, tt, Pac, fun_on_t);
 		plt.SetDataOnPlot3D(23, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4 * dx_acoustic * r0, 1e+4 * dy_acoustic * r0, 1e+4 * dz_acoustic / kabs, NULL, p0v, Nx_acoustic / 2, Ny_acoustic / 2, 0, 1, 0, tt, PTTi, fun_on_t);
 		plt.SetDataOnPlot3D(26, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4 * dx_acoustic * r0, 1e+4 * dy_acoustic * r0, 1e+4 * dz_acoustic / kabs, NULL, p0v, Nx_acoustic / 2, Ny_acoustic / 2, 0, 1, 0, tt, PTTe, fun_on_t);*/
 
-		/*if (melting)
-		if ((tmpi1[Nx / 2][Ny / 2][1] * param.T00) >= (Melt_metal[mt].T_melting + 1.)) // Зона плавления
+		//if (melting)
+		// Потом попробуем брать температуру с исходной сетки температуры (в мэйн поменяь сетку массивов)
+		// сейчас т.к. стоит сетка температуры акустическая то мб увидим не из-за ни ее ли идет разваливание в зоне плавления?
+		if ((Ti_acoustic[Nx_acoustic / 2][Ny_acoustic / 2][1] * param.T00) >= (Melt_metal[mt].T_melting + 1.)) // Зона плавления
+		//if ((tmpi1[Nx / 2][Ny / 2][1] * param.T00) >= (Melt_metal[mt].T_melting + 1.)) // Зона плавления
 		{
-			if ((int(ceil(tt)) % 100 == 0) || (int(trunc(tt)) % 100 == 0)) //
-			{
-				for (int i = 0; i < Nx; i++)
+			//if ((int(ceil(tt)) % 100 == 0) || (int(trunc(tt)) % 100 == 0)) //
+			//{
+				for (int i = 0; i < Nx_acoustic; i++)
 				{
-					for (int k = 0; k < Nz; k++)
+					for (int k = 0; k < Nz_acoustic; k++)
 					{
-						//if ((tmpi1[i][Ny / 2][k] * param.T00) >= (Melt_metal[mt].T_melting - 1.) && (tmpi1[i][Ny / 2][k] * param.T00) <= (Melt_metal[mt].T_melting + 1.))
-						if ((tmpi1[i][Ny / 2][k] * param.T00) >= (Melt_metal[mt].T_melting + 1.))
+						///if ((tmpi1[i][Ny / 2][k] * param.T00) >= (Melt_metal[mt].T_melting - 1.) && (tmpi1[i][Ny / 2][k] * param.T00) <= (Melt_metal[mt].T_melting + 1.))
+						//if ((tmpi1[i][Ny_acoustic / 2][k] * param.T00) >= (Melt_metal[mt].T_melting + 1.))
+						if ((Ti_acoustic[i][Ny_acoustic / 2][k] * param.T00) >= (Melt_metal[mt].T_melting + 1.))
 						{
-							massive_melting_tmp1[i][Ny / 2][k] = tmpi1[i][Ny / 2][k];
+							//massive_melting_tmp1[i][Ny_acoustic / 2][k] = tmpi1[i][Ny_acoustic / 2][k];
+							massive_melting_tmp1[i][Ny_acoustic / 2][k] = Ti_acoustic[i][Ny_acoustic / 2][k];
 						}
 					}
 				}
 
-				for (int i = 0; i < Nx; i++)
+				for (int i = 0; i < Nx_acoustic; i++)
 				{
-					for (int j = 0; j < Ny; j++)
+					for (int j = 0; j < Ny_acoustic; j++)
 					{
-						if ((tmpi1[i][j][1] * param.T00) >= (Melt_metal[mt].T_melting + 1.))
+						//if ((tmpi1[i][j][1] * param.T00) >= (Melt_metal[mt].T_melting + 1.))
+						if ((Ti_acoustic[i][j][1] * param.T00) >= (Melt_metal[mt].T_melting + 1.))
 						{
-							massive_melting_tmp2[i][j][1] = tmpi1[i][j][1];
+							//massive_melting_tmp2[i][j][1] = tmpi1[i][j][1];
+							massive_melting_tmp2[i][j][1] = Ti_acoustic[i][j][1];
 						}
 					}
 				}
 
-				plt.SetDataOnPlotColor3D(13, Nx, Ny, Nz, 1e+4 * dx * r0, 1e+4 * dy * r0, 1e+4 * dz / kabs, massive_melting_tmp1, T00, Ny / 2, xz);
-				plt.SetDataOnPlotColor3D(14, Nx, Ny, Nz, 1e+4 * dx * r0, 1e+4 * dy * r0, 1e+4 * dz / kabs, massive_melting_tmp2, T00, 1, xy);
+				plt.SetDataOnPlotColor3D(13, current_time_frame, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4 * dx_acoustic* r0, 1e+4 * dy_acoustic* r0, 1e+4 * dz_acoustic / kabs, massive_melting_tmp1, T00, Ny_acoustic / 2, xz);
+				plt.SetDataOnPlotColor3D(14, current_time_frame, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4 * dx_acoustic* r0, 1e+4 * dy_acoustic* r0, 1e+4 * dz_acoustic / kabs, massive_melting_tmp2, T00, 1, xy);
 
 				namefile.clear();
 				namefile = "Melting zone (zx) " + metall + "," + type_beam + ", pulse duration = " + ConvertNumToStringdouble(tp * 1e+15) + "fs, moment time = " + ConvertNumToStringdouble(tt) + "fs";
@@ -2658,26 +2778,87 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 				massive_melting_tmp2 = massive_melting_null;
 
 				plt.Close_and_open_files_for_replot(for_close_and_open);
-			}
-		}*/
+			//}
+		}
 
-		if ((tmpi1[Nx_heat / 2][Ny_heat / 2][1] * param.T00) >= (Melt_metal[mt].T_melting + 1.)) // Профили температур ионной решетки
+
+		// Preasure zone
+		if ((e2[Nx_acoustic / 2][Ny_acoustic / 2][1] * p0v) <= -sigma) 
+		//if ((tmpi1[Nx / 2][Ny / 2][1] * param.T00) >= (Melt_metal[mt].T_melting + 1.)) 
+		{
+			for (int i = 0; i < Nx_acoustic; i++)
+			{
+				for (int k = 0; k < Nz_acoustic; k++)
+				{
+					///if ((tmpi1[i][Ny / 2][k] * param.T00) >= (Melt_metal[mt].T_melting - 1.) && (tmpi1[i][Ny / 2][k] * param.T00) <= (Melt_metal[mt].T_melting + 1.))
+					//if ((tmpi1[i][Ny_acoustic / 2][k] * param.T00) >= (Melt_metal[mt].T_melting + 1.))
+					if ((e2[i][Ny_acoustic / 2][k] * p0v) <= -sigma)
+					{
+						//massive_melting_tmp1[i][Ny_acoustic / 2][k] = tmpi1[i][Ny_acoustic / 2][k];
+						massive_melting_tmp1[i][Ny_acoustic / 2][k] = e2[i][Ny_acoustic / 2][k];
+					}
+				}
+			}
+
+			for (int i = 0; i < Nx_acoustic; i++)
+			{
+				for (int j = 0; j < Ny_acoustic; j++)
+				{
+					//if ((tmpi1[i][j][1] * param.T00) >= (Melt_metal[mt].T_melting + 1.))
+					if ((e2[i][j][1] * p0v) <= -sigma)
+					{
+						//massive_melting_tmp2[i][j][1] = tmpi1[i][j][1];
+						massive_melting_tmp2[i][j][1] = e2[i][j][1];
+					}
+				}
+			}
+
+			plt.SetDataOnPlotColor3D(20, current_time_frame, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4 * dx_acoustic * r0, 1e+4 * dy_acoustic * r0, 1e+4 * dz_acoustic / kabs, massive_melting_tmp1, p0v, Ny_acoustic / 2, xz);
+			plt.SetDataOnPlotColor3D(21, current_time_frame, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4 * dx_acoustic * r0, 1e+4 * dy_acoustic * r0, 1e+4 * dz_acoustic / kabs, massive_melting_tmp2, p0v, 1, xy);
+
+			namefile.clear();
+			namefile = "Preasure zone (zx) " + metall + "," + type_beam + ", pulse duration = " + ConvertNumToStringdouble(tp * 1e+15) + "fs, moment time = " + ConvertNumToStringdouble(tt) + "fs";
+			plt.ShowDataOnPlotColor(20, namefile, true);
+			Sleep(1000);
+
+			namefile.clear();
+			namefile = "Preasure zone (yx) " + metall + "," + type_beam + ", pulse duration = " + ConvertNumToStringdouble(tp * 1e+15) + "fs, moment time = " + ConvertNumToStringdouble(tt) + "fs";
+			plt.ShowDataOnPlotColor(21, namefile, true);
+			Sleep(1000);
+
+			massive_melting_tmp1 = massive_melting_null;
+			massive_melting_tmp2 = massive_melting_null;
+
+			plt.Close_and_open_files_for_replot(for_close_and_open);
+			//}
+		}
+
+
+		if ((tmpi1[Nx_heat / 2][Ny_heat / 2][1] * param.T00) >= (Melt_metal[mt].T_melting + 1.)) // Профили температур ионной решетки в разные моменты
 		{
 			if ((int(ceil(tt)) % 1000 == 0 || int(trunc(tt)) % 1000 == 0) && current_number_line_melting <= 10)
 			{
-				plt.SetDataOnPlot3D(12, tmpi1, param.T00, NULL, Ny_heat / 2, 1, 12, current_number_line_melting, NULL, empty, fun_on_x);
-				plt.SetDataOnPlot3D(11, tmpi1, param.T00, Nx_heat / 2, Ny_heat / 2, NULL, 12, current_number_line_melting, NULL, empty, fun_on_z);
+				plt.SetDataOnPlot3D(12, 0, tmpi1, param.T00, NULL, Ny_heat / 2, 1, 12, current_number_line_melting, NULL, empty, fun_on_x);
+				plt.SetDataOnPlot3D(11, 0, tmpi1, param.T00, Nx_heat / 2, Ny_heat / 2, NULL, 12, current_number_line_melting, NULL, empty, fun_on_z);
 				current_number_line_melting++;
 				Legenda_melting_tmp.push_back(ConvertNumToStringdouble(tt) + " fs");
 			}
 		}
 
-
 		//!!!!!!!!!!
-		if (int(ceil(tt)) == 1200 || int(trunc(tt)) == 1200 || int(ceil(tt)) == 1300 || int(trunc(tt)) == 1300 || int(ceil(tt)) == 1500 || int(trunc(tt)) == 1500 || (int)tt == 500 || (int)tt == 1000 || (int)tt == 2000 || (int)tt == 3000 || (int)tt == 4000 || (int)tt == 5000 || (int)tt == 6000 || (int)tt == 7000 || (int)tt == 8000 || (int)tt == 9000
+		/*if (int(ceil(tt)) == 1200 || int(trunc(tt)) == 1200 || int(ceil(tt)) == 1300 || int(trunc(tt)) == 1300 || int(ceil(tt)) == 1500 || int(trunc(tt)) == 1500 || (int)tt == 500 || (int)tt == 1000 || (int)tt == 2000 || (int)tt == 3000 || (int)tt == 4000 || (int)tt == 5000 || (int)tt == 6000 || (int)tt == 7000 || (int)tt == 8000 || (int)tt == 9000
 			|| (int)tt == 10000 || (int)tt == 11000 || (int)tt == 12000 || (int)tt == 13000 || (int)tt == 14000 || (int)tt == 15000 || (int)tt == 16000 || (int)tt == 17000 || (int)tt == 18000 || (int)tt == 19000 || (int)tt == 20000)
-		//if (int(ceil(tt)) == 500 || int(trunc(tt)) == 500 || int(ceil(tt)) % 1000 == 0 || int(trunc(tt)) % 1000 == 0)
-			//|| (int(ceil(tt)) % 50 == 0) || (int(trunc(tt)) % 50 == 0)|| (int(ceil(tt)) == 70) || (int(trunc(tt)) == 70))
+		if (int(ceil(tt)) == 10 || int(trunc(tt)) == 10 || int(ceil(tt)) == 20 || int(trunc(tt)) == 20 || int(ceil(tt)) == 30 || int(trunc(tt)) == 30 ||
+			int(ceil(tt)) == 40 || int(trunc(tt)) == 40 || int(ceil(tt)) == 50 || int(trunc(tt)) == 50 || int(ceil(tt)) == 60 || int(trunc(tt)) == 60 ||
+			int(ceil(tt)) == 70 || int(trunc(tt)) == 70 || int(ceil(tt)) == 80 || int(trunc(tt)) == 80 || int(ceil(tt)) == 90 || int(trunc(tt)) == 90 || 
+			int(ceil(tt)) == 100 || int(trunc(tt)) == 100)
+		(*it_time)
+		if (int(trunc(tt)) == 10 || int(trunc(tt)) == 20 || int(trunc(tt)) == 30 || int(trunc(tt)) == 40 || int(trunc(tt)) == 50 || int(trunc(tt)) == 60 || int(trunc(tt)) == 70 || int(trunc(tt)) == 80 || int(trunc(tt)) == 90 || int(trunc(tt)) == 100 )
+		if (int((*it_time)) == 10 || int((*it_time)) == 20 || int((*it_time)) == 30 || int((*it_time)) == 40 
+			|| int((*it_time)) == 50 || int((*it_time)) == 60 || int((*it_time)) == 70 || int((*it_time)) == 80 
+			|| int((*it_time)) == 90 || int((*it_time)) == 100)*/
+		//if (n == 10 || n == 20 || n == 30 || n == 40 || n == 50 || n == 60 || n == 70 || n == 80 || n == 90 || n == 100)
+		if (n == (*it_fix_time_anim)) // блок отрисовки данных и запись данных в файлы
 		{//!!!!!!!!!!!!!!!!!!!!!!!!!!	tp * 1e+15
 			//plt.Close_and_open_files_for_replot(for_close_and_open);
 			namefile.clear();
@@ -2699,10 +2880,10 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 			namefile = "PTe (t,fms) " + metall + "," + type_beam + ", pulse duration = " + ConvertNumToStringdouble(tp * 1e+15) + "fs, moment time = " + ConvertNumToStringdouble(tt) + "fs, 1";
 			plt.ShowDataOnPlot2D(26, 1, Pfs, namefile, true);*/
 
-			plt.SetDataOnPlotColor3D(2, Nx_heat, Ny_heat, Nz_heat, 1e+4 * dx_heat * r0, 1e+4 * dy_heat * r0, 1e+4 * dz_heat / kabs, tmpe2, T00, Ny_heat / 2, xz);
-			plt.SetDataOnPlotColor3D(3, Nx_heat, Ny_heat, Nz_heat, 1e+4 * dx_heat * r0, 1e+4 * dy_heat * r0, 1e+4 * dz_heat / kabs, tmpi2, T00, Ny_heat / 2, xz);
-			plt.SetDataOnPlotColor3D(4, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4 * dx_acoustic * r0, 1e+4 * dy_acoustic * r0, 1e+4 * dz_acoustic / kabs, e1, p0v, Ny_acoustic / 2, xz);
-			plt.SetDataOnPlotColor3D(5, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4 * dx_acoustic * r0, 1e+4 * dy_acoustic * r0, 1e+4 * dz_acoustic / kabs, e1, p0v, 10, xy);
+			plt.SetDataOnPlotColor3D(2, current_time_frame, Nx_heat, Ny_heat, Nz_heat, 1e+4 * dx_heat * r0, 1e+4 * dy_heat * r0, 1e+4 * dz_heat / kabs, tmpe2, T00, Ny_heat / 2, xz);
+			plt.SetDataOnPlotColor3D(3, current_time_frame, Nx_heat, Ny_heat, Nz_heat, 1e+4 * dx_heat * r0, 1e+4 * dy_heat * r0, 1e+4 * dz_heat / kabs, tmpi2, T00, Ny_heat / 2, xz);
+			plt.SetDataOnPlotColor3D(4, current_time_frame, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4 * dx_acoustic * r0, 1e+4 * dy_acoustic * r0, 1e+4 * dz_acoustic / kabs, e1, p0v, Ny_acoustic / 2, xz);
+			plt.SetDataOnPlotColor3D(5, current_time_frame, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4 * dx_acoustic * r0, 1e+4 * dy_acoustic * r0, 1e+4 * dz_acoustic / kabs, e1, p0v, 10, xy);
 
 			/*plt.SetDataOnPlotColor3D(29, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4 * dx_acoustic * r0, 1e+4 * dy_acoustic * r0, 1e+4 * dz_acoustic / kabs, Pacoustic, p0v, Ny_acoustic / 2, xz);
 			plt.SetDataOnPlotColor3D(30, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4 * dx_acoustic * r0, 1e+4 * dy_acoustic * r0, 1e+4 * dz_acoustic / kabs, Pacoustic, p0v, 10, xy);
@@ -2711,12 +2892,12 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 			plt.SetDataOnPlotColor3D(33, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4 * dx_acoustic * r0, 1e+4 * dy_acoustic * r0, 1e+4 * dz_acoustic / kabs, PTe, p0v, Ny_acoustic / 2, xz);
 			plt.SetDataOnPlotColor3D(34, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4 * dx_acoustic * r0, 1e+4 * dy_acoustic * r0, 1e+4 * dz_acoustic / kabs, PTe, p0v, 10, xy);
 */
-			plt.SetDataOnPlotColor3D(6, Nx_heat, Ny_heat, Nz_heat, 1e+4 * dx_heat * r0, 1e+4 * dy_heat * r0, 1e+4 * dz_heat / kabs, tmpe2, T00, 1, xy);
-			plt.SetDataOnPlotColor3D(7, Nx_heat, Ny_heat, Nz_heat, 1e+4 * dx_heat * r0, 1e+4 * dy_heat * r0, 1e+4 * dz_heat / kabs, tmpi2, T00, 1, xy);
+			plt.SetDataOnPlotColor3D(6, current_time_frame, Nx_heat, Ny_heat, Nz_heat, 1e+4 * dx_heat * r0, 1e+4 * dy_heat * r0, 1e+4 * dz_heat / kabs, tmpe2, T00, 1, xy);
+			plt.SetDataOnPlotColor3D(7, current_time_frame, Nx_heat, Ny_heat, Nz_heat, 1e+4 * dx_heat * r0, 1e+4 * dy_heat * r0, 1e+4 * dz_heat / kabs, tmpi2, T00, 1, xy);
 			if (npxzt <= count_of_lines)
 			{
-				plt.SetDataOnPlot3D(8, e1, p0v, NULL, Ny_acoustic / 2, 10, count_of_lines, npxzt, NULL, empty, fun_on_x);
-				plt.SetDataOnPlot3D(9, e1, p0v, Nx_acoustic / 2, Ny_acoustic / 2, NULL, count_of_lines, npxzt, NULL, empty, fun_on_z);
+				plt.SetDataOnPlot3D(8, 0, e1, p0v, NULL, Ny_acoustic / 2, 10, count_of_lines, npxzt, NULL, empty, fun_on_x);
+				plt.SetDataOnPlot3D(9, 0, e1, p0v, Nx_acoustic / 2, Ny_acoustic / 2, NULL, count_of_lines, npxzt, NULL, empty, fun_on_z);
 				npxzt++;
 				Legenda.push_back(ConvertNumToStringdouble(tt) + " fs");
 			}
@@ -2794,13 +2975,13 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 			plt.SetGridOnPlot3D(27, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4 * dx_acoustic * r0, 1e+4 * dy_acoustic * r0, 1e+4 * dz_acoustic / kabs, 1, fun_on_x);
 			plt.SetGridOnPlot3D(28, Nx_acoustic, Ny_acoustic, Nz_acoustic, 1e+4 * dx_acoustic * r0, 1e+4 * dy_acoustic * r0, 1e+4 * dz_acoustic / kabs, 1, fun_on_z);*/
 
-			plt.SetDataOnPlot3D(15, tmpe2, T00, NULL, Ny_heat / 2, 1, 2, 1, NULL, empty, fun_on_x);
-			plt.SetDataOnPlot3D(15, tmpi2, T00, NULL, Ny_heat / 2, 1, 2, 2, NULL, empty, fun_on_x);
-			plt.SetDataOnPlot3D(16, tmpe2, T00, Nx_heat / 2, Ny_heat / 2, NULL, 2, 1, NULL, empty, fun_on_z);
-			plt.SetDataOnPlot3D(16, tmpi2, T00, Nx_heat / 2, Ny_heat / 2, NULL, 2, 2, NULL, empty, fun_on_z);
+			plt.SetDataOnPlot3D(15, current_time_frame, tmpe2, T00, NULL, Ny_heat / 2, 1, 2, 1, NULL, empty, fun_on_x);
+			plt.SetDataOnPlot3D(15, current_time_frame, tmpi2, T00, NULL, Ny_heat / 2, 1, 2, 2, NULL, empty, fun_on_x);
+			plt.SetDataOnPlot3D(16, current_time_frame, tmpe2, T00, Nx_heat / 2, Ny_heat / 2, NULL, 2, 1, NULL, empty, fun_on_z);
+			plt.SetDataOnPlot3D(16, current_time_frame, tmpi2, T00, Nx_heat / 2, Ny_heat / 2, NULL, 2, 2, NULL, empty, fun_on_z);
 
-			plt.SetDataOnPlot3D(18, e1, p0v, NULL, Ny_acoustic / 2, 1, 1, 1, NULL, empty, fun_on_x);
-			plt.SetDataOnPlot3D(19, e1, p0v, Nx_acoustic / 2, Ny_acoustic / 2, NULL, 1, 1, NULL, empty, fun_on_z);
+			plt.SetDataOnPlot3D(18, current_time_frame, e1, p0v, NULL, Ny_acoustic / 2, 1, 1, 1, NULL, empty, fun_on_x);
+			plt.SetDataOnPlot3D(19, current_time_frame, e1, p0v, Nx_acoustic / 2, Ny_acoustic / 2, NULL, 1, 1, NULL, empty, fun_on_z);
 
 			/*fout_Pac.open("Pac.txt");
 			fout_PTi.open("PTi.txt");
@@ -3140,11 +3321,82 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 			Sleep(1000);
 */
 
+			current_time_frame++;
+			it_fix_time_anim++;
 			plt.Close_and_open_files_for_replot(for_close_and_open);
 		}
 		// next step
 		n++;
 		cout << " step = " << n << endl;
+
+		// Формирование файлов анимации
+		if (current_time_frame == total_time_frame)
+		{
+			namefile.clear();
+			/*namefile = "Animate Te,Ti (t,fms) " + metall + "," + type_beam + ", pulse duration = " + ConvertNumToStringdouble(tp * 1e+15) + "fs, moment time = " + ConvertNumToStringdouble(tt) + "fs, 1";
+			plt.CreateGifOnPlot2D(1, 2, 3, total_time_frame, "Te,Ti", "time,fs", "Te,Ti (K)", TeTiTfs, namefile, true);
+			Sleep(1000);
+			namefile.clear();*/
+
+			/*namefile = "AnimateTi (t,fms) " + metall + "," + type_beam + ", pulse duration = " + ConvertNumToStringdouble(tp * 1e+15) + "fs, moment time = " + ConvertNumToStringdouble(tt) + "fs, 1";
+			plt.CreateGifOnPlot2D(10, 1, 3, total_time_frame, "Temperature in central zone", "time,fs", "Ti, K", TiTfs, namefile, true);
+			Sleep(1000);
+			namefile.clear();*/
+
+			namefile = "Animate Te,Ti (x,mkm) " + metall + "," + type_beam + ", pulse duration = " + ConvertNumToStringdouble(tp * 1e+15) + "fs, moment time = " + ConvertNumToStringdouble(tt) + "fs";
+			plt.CreateGifOnPlot2D(15, 2, 3, total_time_frame, "Te,Ti", "x,mkm", "Te,Ti (K)", TeTiTfs, namefile, true);
+			Sleep(1000);
+			namefile.clear();
+
+			namefile = "Animate Te,Ti (z,mkm) " + metall + "," + type_beam + ", pulse duration = " + ConvertNumToStringdouble(tp * 1e+15) + "fs, moment time = " + ConvertNumToStringdouble(tt) + "fs";
+			plt.CreateGifOnPlot2D(16, 2, 3, total_time_frame, "Te,Ti", "z,mkm", "Te,Ti (K)", TeTiTfs, namefile, true);
+			Sleep(1000);
+			namefile.clear();
+
+			namefile = "Animate P (x,mkm) " + metall + "," + type_beam + ", pulse duration = " + ConvertNumToStringdouble(tp * 1e+15) + "fs, moment time = " + ConvertNumToStringdouble(tt) + "fs";
+			plt.CreateGifOnPlot2D(18, 1, 3, total_time_frame, "P", "x,mkm", "P (bar)", Pfs, namefile, true);
+			Sleep(1000);
+			namefile.clear();
+
+			namefile = "Animate P (z,mkm) " + metall + "," + type_beam + ", pulse duration = " + ConvertNumToStringdouble(tp * 1e+15) + "fs, moment time = " + ConvertNumToStringdouble(tt) + "fs";
+			plt.CreateGifOnPlot2D(19, 1, 3, total_time_frame, "P", "z,mkm", "P (bar)", Pfs, namefile, true);
+			Sleep(1000);
+			namefile.clear();
+
+
+
+
+			namefile = "Animate Te(x, N div 2, z) " + metall + "," + type_beam + ", pulse duration = " + ConvertNumToStringdouble(tp * 1e+15) + "fs, moment time = " + ConvertNumToStringdouble(tt) + "fs";
+			plt.CreateGifOnPlotColor(2, total_time_frame, "Te", "z,mkm", "x,mkm", (1e+4* dz_heat* Nz_heat / kabs), (1e+4* r0* dx_heat* Nx_heat), namefile);
+			Sleep(1000);
+
+			namefile.clear();
+			namefile = "Animate Ti(x, N div 2, z) " + metall + "," + type_beam + ", pulse duration = " + ConvertNumToStringdouble(tp * 1e+15) + "fs, moment time = " + ConvertNumToStringdouble(tt) + "fs";
+			plt.CreateGifOnPlotColor(3, total_time_frame, "Ti", "z,mkm", "x,mkm", (1e+4* dz_heat* Nz_heat / kabs), (1e+4* r0* dx_heat* Nx_heat), namefile);
+			Sleep(1000);
+
+			namefile.clear();
+			namefile = "Animate P (x,N div 2,z) " + metall + "," + type_beam + ", pulse duration = " + ConvertNumToStringdouble(tp * 1e+15) + "fs, moment time = " + ConvertNumToStringdouble(tt) + "fs";
+			plt.CreateGifOnPlotColor(4, total_time_frame, "P(x,N/2,z)", "z,mkm", "x,mkm", (1e+4* dz_acoustic* Nz_acoustic / kabs), (1e+4* r0* dx_acoustic* Nx_acoustic), namefile);
+			Sleep(1000);
+
+			namefile.clear();
+			namefile = "Animate P (x,y,10) " + metall + "," + type_beam + ", pulse duration = " + ConvertNumToStringdouble(tp * 1e+15) + "fs, moment time = " + ConvertNumToStringdouble(tt) + "fs";
+			plt.CreateGifOnPlotColor(5, total_time_frame, "P(x,y,10)", "y,mkm", "x,mkm", (1e+4* r0* dy_acoustic* Ny_acoustic), (1e+4* r0* dx_acoustic* Nx_acoustic), namefile);
+			Sleep(1000);
+
+			namefile.clear();
+			namefile = "Animate Te (x,y,1) " + metall + "," + type_beam + ", pulse duration = " + ConvertNumToStringdouble(tp * 1e+15) + "fs, moment time = " + ConvertNumToStringdouble(tt) + "fs";
+			plt.CreateGifOnPlotColor(6, total_time_frame, "Te", "y,mkm", "x,mkm", (1e+4* r0* dy_heat* Ny_heat), (1e+4* r0* dx_heat* Nx_heat), namefile);
+			Sleep(1000);
+
+			namefile.clear();
+			namefile = "Animate Ti (x,Ny,1) " + metall + "," + type_beam + ", pulse duration = " + ConvertNumToStringdouble(tp * 1e+15) + "fs, moment time = " + ConvertNumToStringdouble(tt) + "fs";
+			plt.CreateGifOnPlotColor(7, total_time_frame, "Ti", "y,mkm", "x,mkm", (1e+4* r0* dy_heat* Ny_heat), (1e+4* r0* dx_heat* Nx_heat), namefile);
+			Sleep(1000);
+			namefile.clear();
+			current_time_frame++;
+		}
 
 		// Perehod na sledujuschij shag po vremeni
 		tmpe0 = tmpe1;
@@ -3164,9 +3416,15 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 		V1 = V2;
 
 		e1 = e2;
+		it_time++;
+
+		if (n == 2500)
+		{
+			system("pause");// ОСТАНОВИЛСЯ ЗДЕСЬ
+		}
 
 		cout << endl;
-	} while (tt <= 8000/*nn < 1000*/);
+	} while (tt <= (*it_last_time) /*8000*//*nn < 1000*/);
 
 	t = clock() - t;
 
@@ -3179,8 +3437,8 @@ void MainProcedure(Metal mt, TypeBeam tbeam, double kte_kte, double ro0, double 
 	if (npxzt < count_of_lines)
 	{
 		npxzt = count_of_lines;
-		plt.SetDataOnPlot3D(8, e1, p0v, NULL, Ny_acoustic / 2, 10, count_of_lines, npxzt, NULL, empty, fun_on_x);
-		plt.SetDataOnPlot3D(9, e1, p0v, Nx_acoustic / 2, Ny_acoustic / 2, NULL, count_of_lines, npxzt, NULL, empty, fun_on_z);
+		plt.SetDataOnPlot3D(8, 0, e1, p0v, NULL, Ny_acoustic / 2, 10, count_of_lines, npxzt, NULL, empty, fun_on_x);
+		plt.SetDataOnPlot3D(9, 0, e1, p0v, Nx_acoustic / 2, Ny_acoustic / 2, NULL, count_of_lines, npxzt, NULL, empty, fun_on_z);
 	}
 
 	//double*** Field_melting;
@@ -3248,17 +3506,19 @@ int main()
 	cout << " tp = " << tp << endl;
 	cout << endl;
 
-	int dxy = 100;
+	//int dxy = 100;
 	int Nx_heat = 100;// dxy; // 100 //100; // chislo uzlov po x // 100
 	int Ny_heat = 100;// dxy;// 100// 100; // chislo uzlov po y //100
 	int Nz_heat = 250;//250; //!!!!!!!!!!!!!!
 
-	int Nx_acoustic = 200;//400; //dxy; // 100 //100; // chislo uzlov po x // 100
-	int Ny_acoustic = 200;// 400;// dxy;// 100// 100; // chislo uzlov po y //100
-	int Nz_acoustic = 400;// 400;// 10000; // !!!!!!
+	int Nx_acoustic = 200;// 200;//400; //dxy; // 100 //100; // chislo uzlov po x // 100
+	int Ny_acoustic = 200;// 200;// 400;// dxy;// 100// 100; // chislo uzlov po y //100
+	int Nz_acoustic = 400;// 400;// 400;// 10000; // !!!!!!
+	// по 400 узлов пока ломануло (посмотреть новый конструткор гнуплот)
 
 	double*** V00, *** V1,*** V2, *** a1y, *** a2y, *** a1z, *** a2z, *** a2x, *** a1x, *** b1x, *** b2x, *** b1y, *** b2y, *** b1z, *** b2z, *** e2, *** e1, *** tmpe0, *** tmpe1, *** tmpe2, *** tmpi0, *** tmpi1, *** tmpi2;    // davlenie, gorizontal'naja skorost', vertikal'naja skorost', temperatura
 	double*** Ti_acoustic, *** Te_acoustic, *** Ti_old_xy_new_z, *** Te_old_xy_new_z, *** Ti_old_y_new_xz, *** Te_old_y_new_xz; // массивы для переопрелеления сетки температуры под акустику
+	double*** massive_melting_tmp1, *** massive_melting_tmp2, *** massive_melting_null;
 
 	// 21 массива
 
@@ -3291,6 +3551,9 @@ int main()
 	Te_old_xy_new_z = new double** [Nx_heat];
 	Ti_old_y_new_xz = new double** [Nx_acoustic];
 	Te_old_y_new_xz = new double** [Nx_acoustic];
+	massive_melting_tmp1 = new double** [Nx_acoustic];
+	massive_melting_tmp2 = new double** [Nx_acoustic];
+	massive_melting_null = new double** [Nx_acoustic];
 	for (int i = 0; i < Nx_acoustic; i++)
 	{
 		V00[i] = new double* [Ny_acoustic];
@@ -3312,6 +3575,9 @@ int main()
 		e2[i] = new double* [Ny_acoustic];
 		Ti_acoustic[i] = new double* [Ny_acoustic];
 		Te_acoustic[i] = new double* [Ny_acoustic];
+		massive_melting_tmp1[i] = new double* [Ny_acoustic];
+		massive_melting_tmp2[i] = new double* [Ny_acoustic];
+		massive_melting_null[i] = new double* [Ny_acoustic];
 		for (int j = 0; j < Ny_acoustic; j++)
 		{
 			V00[i][j] = new double[Nz_acoustic];
@@ -3333,6 +3599,9 @@ int main()
 			e2[i][j] = new double[Nz_acoustic];
 			Ti_acoustic[i][j] = new double[Nz_acoustic];
 			Te_acoustic[i][j] = new double[Nz_acoustic];
+			massive_melting_tmp1[i][j] = new double[Nz_acoustic];
+			massive_melting_tmp2[i][j] = new double[Nz_acoustic];
+			massive_melting_null[i][j] = new double[Nz_acoustic];
 		}
 	}
 
@@ -3552,11 +3821,72 @@ int main()
 	cout << "the end " << endl;
 	system("pause");
 
+	vector<string> Pacteti = { "Data1.txt", "Data2.txt", "Data3.txt", "Data4.txt", "Data5.txt", "Data6.txt" };
+	ofstream file1(Pacteti[0]);
+	ofstream file2(Pacteti[1]);
+	ofstream file3(Pacteti[2]);
+	ofstream file4(Pacteti[3]);
+	ofstream file5(Pacteti[4]);
 
+	for (int i = 0; i < 50; i++)
+	{
+		file1 << i * 0.5 << "   " << sin(i* 0.5) << "   " << cos(i* 0.5) << endl;
+		file2 << i * 0.5 << "   " << 2 * cos(i* 0.5) << "   " << 2*cos(i* 0.5) << endl;
+		file3 << i * 0.5 << "   " << 2 * sin(i* 0.5)+ cos(i* 0.5) << "   " << 5*cos(i* 0.5) << endl;
+		file4 << i * 0.5 << "   " << 2 * sin(i* 0.5)* cos(i* 0.5) << "   " << 10*cos(i* 0.5) << endl;
+		file5 << i * 0.5 << "   " << 2 * sin(i* 0.5) << "   " << 2*cos(i* 0.5) << endl;
+	}
+
+	vector<string> list_namefile = { "P1.txt", "P2.txt", "P3.txt", "P4.txt", "P5.txt" };
+	MyCreateFile(list_namefile.size(), list_namefile);
+
+	//vector<string> moments_time_string; // хранит моменты времени
+	//map<string, string> momtime_n_t;// задает соответствие времени в фс с номером кадра в аниации
+	//map<string, string>::iterator it_map;
+	//it_map = momtime_n_t.begin();
+	//int count_time_frame = 1;
+	//for (double i = 100; i <= 100000; i += 100)
+	//{
+	//	//moments_time_string.push_back(ConvertNumToStringdouble(i) + "fs");
+	//	string tmp_first = ConvertNumToStringdouble(i) + "fs";
+	//	//(*it_map).second = tmp_second + "fs";
+	//	string tmp_second = ConvertNumToString(count_time_frame);
+	//	///cout << tmp_first << "   " << tmp_second << endl;
+	//	//momtime_n_t[tmp_first] = tmp_second + "fs";
+	//	momtime_n_t.insert(make_pair(tmp_first, tmp_second));
+	//	cout << tmp_first << "   " << tmp_second << endl;
+	//	//cout << (*it_map).first << "  =  " << (*it_map).second << endl;
+	//	count_time_frame++;
+	//	it_map++;
+	//	//list_namefile.push_back()
+	//}
+
+
+	//cout << " map " << endl;
+	//for (it_map = momtime_n_t.begin(); it_map != momtime_n_t.end(); it_map++)
+	//{
+	//	cout << (*it_map).first << " = " << (*it_map).second << endl;
+	//}
+
+	//system("pause");
+	//GnuPlot Animate2D(Pacteti);
+	//Animate2D.CreateGifOnPlot2D(0, 2, 3, 5, "y(x)", "x", "y", Pacteti, "Animate 2.10.2024", true);
+
+	//for (int j = 0; j < 120; j += 24)
+	{
+		for (int i = 30; i < 250; i += 10)
+		{
+			//MyCreateFile_Animate(24, 10, 0, i);
+		}
+	}
+
+	//GnuPlot plt_experim(24,40);
+	cout << "Gnuplot" << endl;
+	system("pause");
 	//type metal, type beam, kte, Ce,Ci,	   gamma,    ge,   gi, us	tp s	
 																								//I0 = 1e+7
 	// double*** V2, double*** a1y, double*** a2y, double*** a1z, double*** a2z, double*** a2x, double*** a1x, double*** b1x, double*** b2x, double*** b1y, double*** b2y, double*** b1z, double*** b2z, double*** e2, double*** e1, double*** F, double*** tmpe0, double*** tmpe1, double*** tmpe2, double*** tmpi0, double*** tmpi1, double*** tmpi2, double** Pxt, double** Pzt, int Nx, int Ny, int Nz, Splayn spl_C_l_on_T)
-	MainProcedure(Au, Gauss, 3.115, 19.32, 5.472e-2, 2.550, 2.5e+10, 1.5, 1.11, 3.24e+5, 1e-13, /*0.15e+12*/ 1.5e+11, V00, V1,V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, Nx_heat, Ny_heat, Nz_heat, Nx_acoustic, Ny_acoustic, Nz_acoustic, spl_C_l_on_T, Te_acoustic, Ti_acoustic, Ti_old_xy_new_z, Te_old_xy_new_z, Ti_old_y_new_xz, Te_old_y_new_xz, "Depth1.txt");
+	MainProcedure(Au, Gauss, 3.115, 19.32, 5.472e-2, 2.550, 2.5e+10, 1.5, 1.11, 3.24e+5, 1e-13, /*0.15e+12*/ 1.5e+11, V00, V1,V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, Nx_heat, Ny_heat, Nz_heat, Nx_acoustic, Ny_acoustic, Nz_acoustic, spl_C_l_on_T, Te_acoustic, Ti_acoustic, Ti_old_xy_new_z, Te_old_xy_new_z, Ti_old_y_new_xz, Te_old_y_new_xz, massive_melting_tmp1, massive_melting_tmp2, massive_melting_null, "Depth1.txt");
 	system("pause");
 	//MainProcedure(Ni, Gauss, 0.900, 8.96, 2.733e-2, 3.910, 4.05e+12, 1.5, 1.83, 5.63e+5, 1e-13, 1e+7, V2, a1y, a2y, a1z, a2z, a2x, a1x, b1x, b2x, b1y, b2y, b1z, b2z, e2, e1, tmpe0, tmpe1, tmpe2, tmpi0, tmpi1, tmpi2, Nx_heat, Ny_heat, Nz_heat, Nx_acoustic, Ny_acoustic, Nz_acoustic, spl_C_l_on_T, Te_acoustic, Ti_acoustic);
 	system("pause");
