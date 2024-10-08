@@ -126,14 +126,15 @@ GnuPlot::GnuPlot(int number_of_plots_, int count_frame_)
 
 				file_name = "Data_Gif" + type_plot_Gif + " + " + number_frame_Gif + ".txt";
 				number_frame_Gif.clear();
-				filename_Gif.push_back(file_name);
+				//filename_Gif.push_back(file_name);
+				
 				//v1[j] = ofstream{ file_name };
 				//v1.emplace_back(ofstream{ file_name });
 				///file_Gif.emplace_back(ofstream{ file_name }); // создаие потока вывода в файл и самого файла дл записи туда данных и ео открытие file.open(filename);
 				//file_Gif.push_back(ofstream{ file_name }); // создаие потока вывода в файл и самого файла дл записи туда данных и ео открытие file.open(filename);
 			}
 
-			file_Gif.emplace_back(ofstream{ type_plot_Gif }); // создаие потока вывода в файл и самого файла дл записи туда данных и ео открытие file.open(filename);
+			//file_Gif.emplace_back(ofstream{ type_plot_Gif }); // создаие потока вывода в файл и самого файла дл записи туда данных и ео открытие file.open(filename);
 			type_plot_Gif.clear();
 			gnuplotPipe_tmp_Gif = new FILE; // создание файла дл гнуплота чтобы записывать туда комады дл гнуплота
 			gnuplotPipe_Gif.push_back(gnuplotPipe_tmp_Gif); // вектор файлов
@@ -157,7 +158,7 @@ GnuPlot::GnuPlot(int number_of_plots_, vector<string> filename_)
 	}
 }
 
-GnuPlot::GnuPlot(vector<string> filename_) 
+GnuPlot::GnuPlot(vector<string> filename_)
 {
 	number_of_plots = 1;
 	FILE* gnuplotPipe_tmp;
@@ -700,7 +701,7 @@ void GnuPlot::SetDataOnPlot3D(int Current_number_plot, int current_count_frame, 
 	}
 }
 
-void GnuPlot::SetDataOnPlotColor3D(int Current_number_plot,int current_count_frame, int Nx, int Ny, int Nz, double dx, double dy, double dz, double*** fun_dimensionless, double parametr_for_dimension, int fixed_point_on_axis, Plane plane)
+void GnuPlot::SetDataOnPlotColor3D(int Current_number_plot, int current_count_frame, int Nx, int Ny, int Nz, double dx, double dy, double dz, double*** fun_dimensionless, double parametr_for_dimension, int fixed_point_on_axis, Plane plane)
 {
 	string type_plot_Gif = ConvertNumToStringint(Current_number_plot - 1);
 	string current_count_frame_str = ConvertNumToStringint(current_count_frame - 1);
@@ -1065,7 +1066,7 @@ void GnuPlot::ShowDataOnPlot2D(int Current_number_plot, int Current_number_filen
 //	//str_str += "'" + filename[i - 1] + "' u 1:2 w l title \"" + name_line + "\", ";
 //}
 
-void GnuPlot::CreateGifOnPlot2D(int Current_number_plot, int number_of_lines, int width_line, int count_frame, string title_plot, string xlabel, string ylabel, vector<string> list_name_line, string name_of_file, bool gif_)
+void GnuPlot::CreateGifOnPlot2D(int Current_number_plot, int number_of_lines, int width_line, int count_frame, vector<int> moments_fix_time_anim, string title_plot, string xlabel, string ylabel, vector<string> list_name_line, string name_of_file, bool gif_)
 {
 	if (gif_)
 	{
@@ -1180,10 +1181,36 @@ void GnuPlot::CreateGifOnPlot2D(int Current_number_plot, int number_of_lines, in
 			fprintf(gnuplotPipe_Gif[Current_number_plot], str_str.c_str());
 		}
 
+		string MyArray;
+		string count_frame_string = ConvertNumToStringint(count_frame - 2);
+		string type_plot_Gif = ConvertNumToStringint(Current_number_plot - 1);
+
+		MyArray = "aGet(name, i) = value(sprintf('_%%s_%%i', name, i)) \n";
+		//fprintf(stdout, MyArray.c_str());
+		fprintf(gnuplotPipe_Gif[Current_number_plot], MyArray.c_str());
+		MyArray.clear();
+		MyArray = "aSet(name, i,value) = sprintf('_%%s_%%i = %%.16e', name, i, value) \n";
+		//fprintf(stdout, MyArray.c_str());
+		fprintf(gnuplotPipe_Gif[Current_number_plot], MyArray.c_str());
+		MyArray.clear();
+
+		vector<int>::iterator it_fix_time_anim;
+		int kkk = 0;
+		for (it_fix_time_anim = moments_fix_time_anim.begin(); it_fix_time_anim != moments_fix_time_anim.end(); it_fix_time_anim++)
+		{
+			string fix_time_anim_string = ConvertNumToStringint_1((*it_fix_time_anim));
+			string i_str = ConvertNumToStringint_1(kkk);
+			kkk++;
+			MyArray = "eval aSet(\"A\"," + i_str + "," + fix_time_anim_string + ")\n";
+			//fprintf(stdout, MyArray.c_str());
+			fprintf(gnuplotPipe_Gif[Current_number_plot], MyArray.c_str());
+			MyArray.clear();
+		}
+
 		string title;
-		title = "set title \"" + title_plot + "\"\n";
-		fprintf(gnuplotPipe_Gif[Current_number_plot], title.c_str());
-		title.clear();
+		//title = "set title \"" + title_plot + "\"\n";
+		//fprintf(gnuplotPipe_Gif[Current_number_plot], title.c_str());
+		//title.clear();
 		title = "set xlabel \"" + xlabel + "\"\n";
 		fprintf(gnuplotPipe_Gif[Current_number_plot], title.c_str()); // передаем текущее название осей (подправить универсалом)
 		title.clear();
@@ -1191,14 +1218,11 @@ void GnuPlot::CreateGifOnPlot2D(int Current_number_plot, int number_of_lines, in
 		fprintf(gnuplotPipe_Gif[Current_number_plot], title.c_str());
 		title.clear();
 
-		string count_frame_string = ConvertNumToStringint(count_frame - 2);
+		///string str_str = "do for [i=0:" + count_frame_string + "] { plot sprintf('Data_Gif" + type_plot_Gif + " + " + "%%d" + ".txt', i)";//!!!!!! ПРОДОЛЖИТЬ С ЭТОГО МЕСТА
+		string str_str = "do for [i=0:" + count_frame_string + "] {set title sprintf('" + title_plot + " %%d fs', aGet(\"A\",i)); plot sprintf('Data_Gif" + type_plot_Gif + " + " + "%%d" + ".txt', i)";//!!!!!! ПРОДОЛЖИТЬ С ЭТОГО МЕСТА
+		//fprintf(stdout, str_str.c_str());
 
-		//string str_str = "do for [i=1:" + count_frame_string + "] { set title sprintf('y(x) %%d', " /*+ moments_time[]*/ +"); plot sprintf('Data%%d.txt', i)";
-																		//   filename[Current_number_plot]
-														//  "Data_Gif" + type_plot_Gif + " + " + number_frame_Gif + ".txt";
-		string type_plot_Gif = ConvertNumToStringint(Current_number_plot - 1);
-		string str_str = "do for [i=0:" + count_frame_string + "] { plot sprintf('Data_Gif" + type_plot_Gif + " + " + "%%d" + ".txt', i)";//!!!!!! ПРОДОЛЖИТЬ С ЭТОГО МЕСТА
-	//	string str_str = "do for [i=1:" + count_frame_string + "] { plot sprintf('Data%%d.txt', i)";//!!!!!! ПРОДОЛЖИТЬ С ЭТОГО МЕСТА
+		//	string str_str = "do for [i=1:" + count_frame_string + "] { plot sprintf('Data%%d.txt', i)";//!!!!!! ПРОДОЛЖИТЬ С ЭТОГО МЕСТА
 
 		for (int ii = 1; ii <= number_of_lines; ii++) // number_of_lines - число линий на плоте, 
 		{
@@ -1305,7 +1329,7 @@ void GnuPlot::ShowDataOnPlotColor(int Current_number_plot, string name_of_file, 
 //	fflush(gnuplotPipe[Current_number_plot]);
 //}
 
-void GnuPlot::CreateGifOnPlotColor(int Current_number_plot, int count_frame, string title_plot, string xlabel, string ylabel, long float right_bondary_x, long float top_bondary_y, string name_of_file)
+void GnuPlot::CreateGifOnPlotColor(int Current_number_plot, int count_frame, vector<int> moments_fix_time_anim, string title_plot, string xlabel, string ylabel, long float right_bondary_x, long float top_bondary_y, string name_of_file)
 {
 	fprintf(gnuplotPipe_Gif[Current_number_plot], "reset\n");
 	fprintf(gnuplotPipe_Gif[Current_number_plot], "set terminal gif font arial 11 animate delay 100 loop 0 size 640,480\n"); // delay 10 = 0.1 сек; loop 0 - бесконечный цикл повтора (1 - 1 раз повтор)
@@ -1327,28 +1351,46 @@ void GnuPlot::CreateGifOnPlotColor(int Current_number_plot, int count_frame, str
 		fprintf(gnuplotPipe[Current_number_plot], "set palette defined (0 \"red\", 1 \"blue\")\n");
 	}
 
-	string title = "set title \"" + title_plot + "\"\n";
-	fprintf(gnuplotPipe_Gif[Current_number_plot], title.c_str());
-	title.clear();
+
+	string MyArray;
+	string count_frame_string = ConvertNumToStringint(count_frame - 2);
+	string type_plot_Gif = ConvertNumToStringint(Current_number_plot - 1);
+
+	MyArray = "aGet(name, i) = value(sprintf('_%%s_%%i', name, i)) \n";
+	//fprintf(stdout, MyArray.c_str());
+	fprintf(gnuplotPipe_Gif[Current_number_plot], MyArray.c_str());
+	MyArray.clear();
+	MyArray = "aSet(name, i,value) = sprintf('_%%s_%%i = %%.16e', name, i, value) \n";
+	//fprintf(stdout, MyArray.c_str());
+	fprintf(gnuplotPipe_Gif[Current_number_plot], MyArray.c_str());
+	MyArray.clear();
+
+	vector<int>::iterator it_fix_time_anim;
+	int kkk = 0;
+	for (it_fix_time_anim = moments_fix_time_anim.begin(); it_fix_time_anim != moments_fix_time_anim.end(); it_fix_time_anim++)
+	{
+		string fix_time_anim_string = ConvertNumToStringint_1((*it_fix_time_anim));
+		string i_str = ConvertNumToStringint_1(kkk);
+		kkk++;
+		MyArray = "eval aSet(\"A\"," + i_str + "," + fix_time_anim_string + ")\n";
+		//fprintf(stdout, MyArray.c_str());
+		fprintf(gnuplotPipe_Gif[Current_number_plot], MyArray.c_str());
+		MyArray.clear();
+	}
+
+	string title;// = "set title \"" + title_plot + "\"\n";
+	//fprintf(gnuplotPipe_Gif[Current_number_plot], title.c_str());
+	//title.clear();
 	title = "set xlabel \"" + xlabel + "\"\n";
 	fprintf(gnuplotPipe_Gif[Current_number_plot], title.c_str());
 	title.clear();
 	title = "set ylabel \"" + ylabel + "\"\n";
 	fprintf(gnuplotPipe_Gif[Current_number_plot], title.c_str());
 	title.clear();
-	/*fprintf(gnuplotPipe[Current_number_plot], ("set term " + GetGPTerminal() + " position 0,0 size %zu,%zu\n").c_str(), GetTermnalWidth(), 415);
-	fprintf(gnuplotPipe[Current_number_plot], "plot [][0:1] 2\n");
-	fflush(gnuplotPipe[Current_number_plot]);*/
 
-
-	string count_frame_string = ConvertNumToStringint(count_frame - 2);//   filename[Current_number_plot]
-													//  "Data_Gif" + type_plot_Gif + " + " + number_frame_Gif + ".txt";
-	//string str_str = "do for [i=1:" + count_frame_string + "] { plot sprintf('Data%%dC.txt', i) u 1:2:3 with image}\n";//!!!!!!
-																//"Data_Gif" + type_plot_Gif + " + " + number_frame_Gif + ".txt";
-	string type_plot_Gif = ConvertNumToStringint(Current_number_plot - 1);
-	string str_str = "do for [i=0:" + count_frame_string + "] { plot sprintf('Data_Gif" + type_plot_Gif + " + " + "%%d" + ".txt', i) u 1:2:3 with image}\n";//!!!!!!
+	string str_str = "do for [i=0:" + count_frame_string + "] {set title sprintf('" + title_plot + " %%d fs', aGet(\"A\",i)); plot sprintf('Data_Gif" + type_plot_Gif + " + " + "%%d" + ".txt', i) u 1:2:3 with image}\n";//!!!!!!
 	//str_str_str = "plot '" + filename[Current_number_plot] + "' u 1:2:3 with image}\n";
-	fprintf(gnuplotPipe_Gif[Current_number_plot], str_str.c_str(), filename_Gif[Current_number_plot].c_str());
+	fprintf(gnuplotPipe_Gif[Current_number_plot], str_str.c_str());
 
 	fflush(gnuplotPipe_Gif[Current_number_plot]);
 }
