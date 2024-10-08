@@ -78,8 +78,8 @@ public:
 	void ShowDataOnPlot2D(int Current_number_plot, int number_of_lines, vector<string> list_name_line, string name_of_file, bool png_);
 	// Отриосвка данных линиями (если есть много линий то легенда) (к одному плоту привязано несколько файлов с данными)
 	void ShowDataOnPlot2D(int Current_number_plot, int Current_number_filename, int number_of_lines, vector<string> list_name_line, string name_of_file, bool png_);
-	void CreateGifOnPlot2D(int Current_number_plot, int number_of_lines, int width_line, int count_frame, string title_plot, string xlabel, string ylabel, vector<string> list_name_line, string name_of_file, bool gif_);
-	void CreateGifOnPlotColor(int Current_number_plot, int count_frame, string title_plot, string xlabel, string ylabel, long float right_bondary_x, long float top_bondary_y, string name_of_file);
+	void CreateGifOnPlot2D(int Current_number_plot, int number_of_lines, int width_line, int count_frame, vector<int> moments_fix_time_anim, string title_plot, string xlabel, string ylabel, vector<string> list_name_line, string name_of_file, bool gif_);
+	void CreateGifOnPlotColor(int Current_number_plot, int count_frame, vector<int> moments_fix_time_anim, string title_plot, string xlabel, string ylabel, long float right_bondary_x, long float top_bondary_y, string name_of_file);
 
 	// Отриосвка данных цветовой палитрой (радуга)
 	void ShowDataOnPlotColor(int Current_number_plot, string name_of_file, bool png_);
