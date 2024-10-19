@@ -189,6 +189,55 @@ void Splayn::InterpolateFast(size_t power, double*** Tei, int fix_x, int fix_y, 
 
 }
 
+void Splayn::InterpolateFast1D(VecD X, VecD Y)
+{
+	this->_Polinoms.clear();
+	this->_Polinoms.erase(this->_Polinoms.begin(), this->_Polinoms.end());
+
+	this->SetInitialData(X, Y, Y, 1);
+
+	//if (dr == x)
+	{
+		for (size_t i = 0; i < this->_X.size() - 1; i++)
+		{
+			this->_Polinoms.push_back(Polinomial(VecD{ Y[i] + (-this->_X[i]) * ((Y[i + 1] - Y[i]) / (this->_X[1] - this->_X[0])), ((Y[i + 1] - Y[i]) / (this->_X[1] - this->_X[0])) }));
+		}
+	}
+}
+
+
+void Splayn::InterpolateFast1D(string fiename)
+{
+	this->_Polinoms.clear();
+	this->_Polinoms.erase(this->_Polinoms.begin(), this->_Polinoms.end());
+
+	ifstream in(fiename); // окрываем файл для чтения
+	VecD X;
+	VecD Y;
+
+	if (in.is_open())
+	{
+		double x, y;
+		while (in >> x >> y)
+		{
+			/*	new_points.push_back(Point{ x, y });*/
+			X.push_back(x);
+			Y.push_back(y);
+			//cout << x << "   " << y << endl;
+		}
+	}
+	in.close();
+	this->SetInitialData(X, Y, Y, 1);
+
+	//if (dr == x)
+	{
+		for (size_t i = 0; i < this->_X.size() - 1; i++)
+		{
+			this->_Polinoms.push_back(Polinomial(VecD{ Y[i] + (-this->_X[i]) * ((Y[i + 1] - Y[i]) / (this->_X[1] - this->_X[0])), ((Y[i + 1] - Y[i]) / (this->_X[1] - this->_X[0])) }));
+		}
+	}
+}
+
 void Splayn::Interpolate(VecD X, VecD Y, size_t power)
 {
 	this->_X = X;
@@ -330,7 +379,6 @@ void Splayn::OutPut()
 
 void Splayn::Calculation_Interpolation(string fiename)
 {
-	vector<Point> new_points;
 	ifstream in(fiename); // окрываем файл для чтения
 
 	VecD X;
