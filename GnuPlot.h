@@ -39,7 +39,7 @@ public:
 	// используется только для статических картинок
 	GnuPlot(int number_of_plots_); // наш объект состоит из нескольких плотов // ++++++++++++++++++
 
-	// используется для статических картинок ианимации
+	// используется для статических картинок и анимации
 	GnuPlot(int number_of_plots_, int count_frame);
 
 	// конструктор для создания плотиков в которых будем отображать экспериментальные данные лежащие в файлах изначально
@@ -70,7 +70,7 @@ public:
 	void SetDataOnPlot3D(int Current_number_plot, int current_count_frame, double*** fun_dimensionless, double parametr_for_dimension, int fixed_point_on_axis_x, int fixed_point_on_axis_y, int fixed_point_on_axis_z, int number_of_lines, int current_number_of_line, double moment_of_time, vector<double***> vec, Profile prof); // linetype и поглдывать на рафики с задачи (от времеи могут быть)
 
 	// Для получения красочного рисунка (поле температуры пластины 2D)
-	void SetDataOnPlotColor2D(int Current_number_plot, int Nx, int Ny, double dx, double dy, double** fun, double parametr_for_dimension);
+	void SetDataOnPlotColor2D(int Current_number_plot, int current_count_frame, int Nx, int Ny, double dx, double dy, double** fun, double parametr_for_dimension);
 	// Для получения красочного рисунка (профиль температуры в сечении (плоскости) 3-х мерного объекта - куба)
 	void SetDataOnPlotColor3D(int Current_number_plot, int current_count_frame, int Nx, int Ny, int Nz, double dx, double dy, double dz, double*** fun_dimensionless, double parametr_for_dimension, int fixed_point_on_axis, Plane plane);
 
