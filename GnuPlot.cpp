@@ -35,6 +35,21 @@ string ConvertNumToStringint_1(int i)
 	return tmp_num_line;
 }
 
+string ConvertNumToStringdouble_gnuplot(double i)
+{
+	string tmp_num_line;
+
+	int length = snprintf(NULL, 0, "%lf", i);
+	char* str = new char[length + 1];
+	snprintf(str, length + 1, "%lf", i);
+	for (int j = 0; j < length; j++)
+	{
+		tmp_num_line.push_back(str[j]); // номер столбца
+	}
+
+	return tmp_num_line;
+}
+
 using namespace std;
 
 // ORIGINAL
@@ -112,7 +127,8 @@ GnuPlot::GnuPlot(int number_of_plots_, int count_frame_)
 				type_plot_Gif.push_back(str[j]);
 			}
 
-			for (int j = 0; j < count_frame_; ++j)
+			int j = 0;
+			//for (int j = 0; j < count_frame_; ++j)
 			{
 				string number_frame_Gif /*= "GIF"*/;
 
@@ -127,7 +143,7 @@ GnuPlot::GnuPlot(int number_of_plots_, int count_frame_)
 				file_name = "Data_Gif" + type_plot_Gif + " + " + number_frame_Gif + ".txt";
 				number_frame_Gif.clear();
 				//filename_Gif.push_back(file_name);
-				
+
 				//v1[j] = ofstream{ file_name };
 				//v1.emplace_back(ofstream{ file_name });
 				///file_Gif.emplace_back(ofstream{ file_name }); // создаие потока вывода в файл и самого файла дл записи туда данных и ео открытие file.open(filename);
@@ -302,14 +318,33 @@ void GnuPlot::SetParametrs2D(int Current_number_plot, int number_of_lines, int w
 	/////////////////////////////////////////////////
 
 	fprintf(gnuplotPipe[Current_number_plot], ("set term " + GetGPTerminal() + " position 0,0 size %zu,%zu\n").c_str(), GetTermnalWidth(), 415);
-	fprintf(gnuplotPipe[Current_number_plot], "plot [][0:1] 2\n");
-	printf("Press enter when window will appear");
+	//fprintf(gnuplotPipe[Current_number_plot], "plot [][0:1] 2\n");
+	//printf("Press enter when window will appear");
 	fflush(gnuplotPipe[Current_number_plot]); // Пропихиваем данные туда
 }
 
 void GnuPlot::SetParametrsOnPlotColor(int Current_number_plot, string title_plot, string xlabel, string ylabel, long float right_bondary_x, long float top_bondary_y) // Current_number_plot=0,1,2, ....
 {
 	//gnuplotPipe[Current_number_plot] = _popen(GetGPPath().c_str(), "w"); // открываем текущий плот
+	fprintf(gnuplotPipe_Gif[Current_number_plot], "reset\n");
+	// вместе с русской кодировкой
+	/*string stroka1 = ConvertNumToStringdouble_gnuplot(0.);
+	string stroka2 = ConvertNumToStringdouble_gnuplot(right_bondary_x);
+	string stroka3 = ConvertNumToStringdouble_gnuplot(0.);
+	string stroka4 = ConvertNumToStringdouble_gnuplot(top_bondary_y);
+
+	stroka1.replace(stroka1.find(","), 1,".");
+	stroka2.replace(stroka2.find(","), 1, ".");
+	stroka3.replace(stroka3.find(","), 1, ".");
+	stroka4.replace(stroka4.find(","), 1, ".");
+
+	string total_str = "set xrange ["+ stroka1  + ":" + stroka2 +"]\n";
+	fprintf(gnuplotPipe[Current_number_plot], total_str.c_str());
+	total_str.clear();
+	total_str = "set yrange [" + stroka3 + ":" + stroka4 + "]\n";
+	fprintf(gnuplotPipe[Current_number_plot], total_str.c_str());*/
+
+	///fprintf(gnuplotPipe[Current_number_plot], "set yrange [%f:%f]\n", 0., top_bondary_y);
 	fprintf(gnuplotPipe[Current_number_plot], "set xrange [%lf:%lf]\n", 0., right_bondary_x);
 	fprintf(gnuplotPipe[Current_number_plot], "set yrange [%lf:%lf]\n", 0., top_bondary_y);
 
@@ -333,8 +368,8 @@ void GnuPlot::SetParametrsOnPlotColor(int Current_number_plot, string title_plot
 	title = "set ylabel \"" + ylabel + "\"\n";
 	fprintf(gnuplotPipe[Current_number_plot], title.c_str());
 	fprintf(gnuplotPipe[Current_number_plot], ("set term " + GetGPTerminal() + " position 0,0 size %zu,%zu\n").c_str(), GetTermnalWidth(), 415);
-	fprintf(gnuplotPipe[Current_number_plot], "plot [][0:1] 2\n");
-	printf("Press enter when window will appear");
+	//fprintf(gnuplotPipe[Current_number_plot], "plot [][0:1] 2\n");
+	//printf("Press enter when window will appear");
 	fflush(gnuplotPipe[Current_number_plot]); // Пропихиваем данные туда
 }
 
@@ -587,6 +622,18 @@ void GnuPlot::SetDataOnPlot3D(int Current_number_plot, int current_count_frame, 
 			}
 		}
 
+		if (Current_number_plot == 0 || Current_number_plot == 22)
+		{
+			//ofstream file_anim("e(xy) z(index) = " + z_str + " + " + current_count_frame_str + ".txt");
+			// продолить запись профилей P(x) легенда z но для от y = Ny/2 до y = Ny/2-40 (для тепловой задачи)
+		}
+
+		if (Current_number_plot == 17 || Current_number_plot == 23)
+		{
+			//ofstream file_anim("e(xy) z(index) = " + z_str + " + " + current_count_frame_str + ".txt");
+
+		}
+
 	}
 
 	if (prof == fun_on_y)
@@ -710,21 +757,44 @@ void GnuPlot::SetDataOnPlotColor3D(int Current_number_plot, int current_count_fr
 	//  переаем размеры области и зачение функций в размером виде (иселючение: fun в SetDataOnPlotColor3D)!!!!!
 	if (plane == xy)
 	{
-		for (size_t i = 0; i < Nx; i++)
-			for (size_t j = 0; j < Ny; j++) {
-				file[Current_number_plot] << i * dx << "   " << j * dy << "   " << parametr_for_dimension * fun_dimensionless[i][j][fixed_point_on_axis] << endl;
-			}
-
-		if (count_frame != 0)
+		if (Current_number_plot != 21)
 		{
-			//cout << "hello ANIMATE " << endl;
-			//cout << "Data_Gif" + type_plot_Gif + " + " + current_count_frame_str + ".txt" << endl;
-			//file_Gif[Current_number_plot].open("Data_Gif" + type_plot_Gif + " + " + current_count_frame_str + ".txt");
 			for (size_t i = 0; i < Nx; i++)
 				for (size_t j = 0; j < Ny; j++) {
-					file_anim << i * dx << "   " << j * dy << "   " << parametr_for_dimension * fun_dimensionless[i][j][fixed_point_on_axis] << endl;
+					file[Current_number_plot] << i * dx << "   " << j * dy << "   " << parametr_for_dimension * fun_dimensionless[i][j][fixed_point_on_axis] << endl;
 				}
+
+			if (count_frame != 0)
+			{
+				//cout << "hello ANIMATE " << endl;
+				//cout << "Data_Gif" + type_plot_Gif + " + " + current_count_frame_str + ".txt" << endl;
+				//file_Gif[Current_number_plot].open("Data_Gif" + type_plot_Gif + " + " + current_count_frame_str + ".txt");
+				for (size_t i = 0; i < Nx; i++)
+					for (size_t j = 0; j < Ny; j++) {
+						file_anim << i * dx << "   " << j * dy << "   " << parametr_for_dimension * fun_dimensionless[i][j][fixed_point_on_axis] << endl;
+					}
+			}
 		}
+
+
+		if (Current_number_plot == 21)
+		{
+			string z_str;
+			for (int k = 0; k <= 50; k++) // цикл по индексам оси z
+			{
+				z_str = ConvertNumToStringint(k - 1);
+				ofstream file_anim("e(xy) z(index) = " + z_str + " + " + current_count_frame_str + ".txt");
+
+				for (size_t i = 0; i < Nx; i++)
+					for (size_t j = 0; j < Ny; j++) {
+						file_anim << i * dx << "   " << j * dy << "   " << parametr_for_dimension * fun_dimensionless[i][j][k] << endl;
+					}
+
+				file_anim.close();
+			}
+		}
+
+
 	}
 
 	if (plane == xz)
@@ -762,12 +832,41 @@ void GnuPlot::SetDataOnPlotColor3D(int Current_number_plot, int current_count_fr
 	}
 }
 
-void GnuPlot::SetDataOnPlotColor2D(int Current_number_plot, int Nx, int Ny, double dx, double dy, double** fun, double parametr_for_dimension)
+void GnuPlot::SetDataOnPlotColor2D(int Current_number_plot, int current_count_frame, int Nx, int Ny, double dx, double dy, double** fun, double parametr_for_dimension)
 {
+	string type_plot_Gif = ConvertNumToStringint(Current_number_plot - 1);
+	string current_count_frame_str = ConvertNumToStringint(current_count_frame - 1);
+	ofstream file_anim("Data_Gif" + type_plot_Gif + " + " + current_count_frame_str + ".txt");
 	for (size_t i = 0; i < Nx; i++)
 		for (size_t j = 0; j < Ny; j++) {
 			file[Current_number_plot] << i * dx << "   " << j * dy << "   " << parametr_for_dimension * fun[i][j] << endl;
 		}
+
+	if (count_frame != 0)
+	{
+		for (size_t i = 0; i < Nx; i++)
+			for (size_t j = 0; j < Ny; j++) {
+				file_anim << i * dx << "   " << j * dy << "   " << parametr_for_dimension * fun[i][j] << endl;
+			}
+	}
+
+	//if (Current_number_plot == 21)
+	//{
+	//	string z_str;
+	//	for (int i = 0; i <= 50; i++) // цикл по индексам оси z
+	//	{
+	//		z_str = ConvertNumToStringint(i - 1);
+	//		ofstream file_anim("e(xy) z(index) = " + z_str + " + " + current_count_frame_str + ".txt");
+
+	//		for (size_t i = 0; i < Nx; i++)
+	//			for (size_t j = 0; j < Ny; j++) {
+	//				file_anim << i * dx << "   " << j * dy << "   " << parametr_for_dimension * fun[i][j] << endl;
+	//			}
+
+	//		file_anim.close();
+	//	}
+	//}
+
 }
 
 void GnuPlot::ShowDataOnPlot2D(int Current_number_plot, int number_of_lines, vector<string> list_name_line, string name_of_file, bool png_)
@@ -1269,7 +1368,6 @@ void GnuPlot::CreateGifOnPlot2D(int Current_number_plot, int number_of_lines, in
 	//str_str += "'" + filename[i - 1] + "' u 1:2 w l title \"" + name_line + "\", ";
 }
 
-
 void GnuPlot::ShowDataOnPlotColor(int Current_number_plot, string name_of_file, bool png_)
 {
 	if (png_)
@@ -1336,6 +1434,22 @@ void GnuPlot::CreateGifOnPlotColor(int Current_number_plot, int count_frame, vec
 	string str_str_str = "set output \"" + name_of_file + ".gif\" \n";
 	fprintf(gnuplotPipe_Gif[Current_number_plot], str_str_str.c_str());
 	str_str_str.clear();
+
+	/*string stroka1 = ConvertNumToStringdouble_gnuplot(0.);
+	string stroka2 = ConvertNumToStringdouble_gnuplot(right_bondary_x);
+	string stroka3 = ConvertNumToStringdouble_gnuplot(0.);
+	string stroka4 = ConvertNumToStringdouble_gnuplot(top_bondary_y);
+
+	stroka1.replace(stroka1.find(","), 1, ".");
+	stroka2.replace(stroka2.find(","), 1, ".");
+	stroka3.replace(stroka3.find(","), 1, ".");
+	stroka4.replace(stroka4.find(","), 1, ".");
+
+	string total_str = "set xrange [" + stroka1 + ":" + stroka2 + "]\n";
+	fprintf(gnuplotPipe[Current_number_plot], total_str.c_str());
+	total_str.clear();
+	total_str = "set yrange [" + stroka3 + ":" + stroka4 + "]\n";
+	fprintf(gnuplotPipe[Current_number_plot], total_str.c_str());*/
 
 	fprintf(gnuplotPipe_Gif[Current_number_plot], "set xrange [%lf:%lf]\n", 0., right_bondary_x);
 	fprintf(gnuplotPipe_Gif[Current_number_plot], "set yrange [%lf:%lf]\n", 0., top_bondary_y);
