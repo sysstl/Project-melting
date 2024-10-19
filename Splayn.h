@@ -61,6 +61,8 @@ public:
 	void OutPut();
 	/*void OutPutFast(double X);*/
 	void Calculation_Interpolation(string fiename);
+	void InterpolateFast1D(VecD X, VecD Y);
+	void InterpolateFast1D(string fiename);
 	void Calculation_Interpolation(double*** Tei, int Nz_heat, double dz_heat, int fix_x, int fix_y);
 	void Calculation_InterpolationFast(double*** Tei, int Nz_heat, double dz_heat, int fix_x, int fix_y);
 	void Calculation_InterpolationFast(string fiename);
